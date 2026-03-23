@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/revenues")
@@ -24,9 +25,7 @@ public class RevenueController {
     private final StatsService statsService;
     private final RevenueService revenueService;
 
-
     @GetMapping("/items/top")
-    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
     public ResponseEntity<List<ItemStatsDTO>> topItems(@RequestParam(defaultValue = "5") int topN) {
         return ResponseEntity.ok(statsService.getTopSellingItems(topN));
     }
@@ -36,8 +35,7 @@ public class RevenueController {
     public void record(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam PaymentMethod method,
-            @RequestParam BigDecimal amount
-    ) {
+            @RequestParam BigDecimal amount) {
         revenueService.recordRevenue(date, method, amount);
     }
 
@@ -75,7 +73,8 @@ public class RevenueController {
 
     @GetMapping("/invoicesByDate")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
-    public List<Invoice> getInvoicesByDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public List<Invoice> getInvoicesByDate(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return revenueService.getInvoicesByDate(date);
     }
 
@@ -87,5 +86,12 @@ public class RevenueController {
         return revenueService.getDailyRevenueInMonth(month, year);
     }
 
+    @GetMapping("/payment-method/counts")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
+    public List<PaymentMethodCountDTO> getCountsByPaymentMethod(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        return revenueService.getInvoiceCountsByPaymentMethod(start, end);
+    }
 
 }

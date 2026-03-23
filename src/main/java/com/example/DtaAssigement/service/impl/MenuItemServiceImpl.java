@@ -28,7 +28,6 @@ public class MenuItemServiceImpl implements MenuItemService {
     private final CategoryRepository categoryrepository;
     private final CategoryRepository categoryRepo;
 
-
     @Override
     @Cacheable(value = "menuItems", key = "'all'")
     public List<MenuItem> getAllMenuItems() {
@@ -48,10 +47,20 @@ public class MenuItemServiceImpl implements MenuItemService {
         if (!categoryRepo.existsByName(categoryName)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
-                    "Category '" + categoryName + "' not found"
-            );
+                    "Category '" + categoryName + "' not found");
         }
         return menuItemRepo.findByCategoryName(categoryName);
+    }
+
+    @Override
+    @Cacheable(value = "menuItemsByCategoryId", key = "#categoryId")
+    public List<MenuItem> getMenuItemsByCategoryId(Long categoryId) {
+        if (!categoryRepo.existsById(categoryId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Category with ID " + categoryId + " not found");
+        }
+        return menuItemRepo.findByCategoryId(categoryId);
     }
 
     @Override
@@ -65,7 +74,8 @@ public class MenuItemServiceImpl implements MenuItemService {
         }
         // Tìm danh mục theo tên và id
         Category category = categoryrepository.findByName(categoryName)
-                .orElseThrow(() -> new IllegalArgumentException("Danh mục với tên '" + categoryName + "' không tồn tại."));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Danh mục với tên '" + categoryName + "' không tồn tại."));
         // Chuyển DTO thành entity
         MenuItem menuItem = MenuItemMapper.toEntity(menuItemDTO, category);
         menuItem.setCategory(category); // Gán lại để đảm bảo đúng entity
@@ -75,13 +85,13 @@ public class MenuItemServiceImpl implements MenuItemService {
         return MenuItemMapper.toDTO(created);
     }
 
-
     @Override
     @CachePut(value = "menuItem", key = "#id")
     @CacheEvict(value = "menuItems", allEntries = true)
     public MenuItemDTO updateMenuItem(Long id, MenuItemDTO menuItemDTO) {
         MenuItem existing = menuItemRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MenuItem not found with id " + id));
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MenuItem not found with id " + id));
 
         if (menuItemDTO.getCategory() != null) {
             Category category = categoryRepo.findByName(menuItemDTO.getCategory().getName())
@@ -90,7 +100,7 @@ public class MenuItemServiceImpl implements MenuItemService {
             existing.setName(menuItemDTO.getName());
             existing.setPrice(menuItemDTO.getPrice());
             existing.setImageUrl(menuItemDTO.getImageUrl());
-        }else{
+        } else {
             throw new IllegalArgumentException("Category k dc để trống");
         }
 
@@ -106,8 +116,4 @@ public class MenuItemServiceImpl implements MenuItemService {
         menuItemRepo.deleteById(id);
     }
 
-
-
-
 }
-

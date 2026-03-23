@@ -17,4 +17,5 @@ public interface RevenueService {
     List<RevenueSummary> getRevenueGroupedByMethod(LocalDate start, LocalDate end);
     List<DailyRevenueDTO> getDailyRevenueInMonth(int month, int year);
     List<Invoice> getInvoicesByDate(LocalDate date);
+    List<com.example.DtaAssigement.dto.PaymentMethodCountDTO> getInvoiceCountsByPaymentMethod(LocalDate start, LocalDate end);
 }

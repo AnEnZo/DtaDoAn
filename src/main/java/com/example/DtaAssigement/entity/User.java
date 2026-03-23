@@ -1,11 +1,11 @@
 package com.example.DtaAssigement.entity;
 
-
 import com.example.DtaAssigement.ennum.AuthProvider;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,11 +37,11 @@ public class User {
     )
 
     @Builder.Default
-    @JsonManagedReference
+    @JsonIgnore
     private Set<Roles> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIgnore
     @Builder.Default
     private Set<UserVoucher> userVouchers = new HashSet<>();
 
@@ -49,4 +50,10 @@ public class User {
 
     private String providerId;       // sẽ lưu “sub” hoặc “id” của user bên provider
 
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void onCreate() {
+        if (createdAt == null) createdAt = LocalDateTime.now();
+    }
 }

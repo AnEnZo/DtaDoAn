@@ -23,26 +23,22 @@ public class MenuItemController {
     private final MenuItemService service;
     private final MenuItemService menuItemService;
 
-
     @GetMapping
-    @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
-    public ResponseEntity<List<MenuItemDTO>> getAll() {
+    public ResponseEntity<List<MenuItemDTO>> getAll(@RequestParam(value = "limit", required = false) Integer limit) {
         List<MenuItemDTO> dtos = service.getAllMenuItems().stream()
+                .limit(limit != null && limit > 0 ? limit : Long.MAX_VALUE)
                 .map(MenuItemMapper::toDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
 
-
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
     public ResponseEntity<MenuItemDTO> getById(@PathVariable Long id) {
         return service.getMenuItemById(id)
                 .map(MenuItemMapper::toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
@@ -69,7 +65,6 @@ public class MenuItemController {
     }
 
     @GetMapping("/category/{name}")
-    @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
     public ResponseEntity<List<MenuItemDTO>> getByCategoryName(@PathVariable("name") String name) {
         List<MenuItemDTO> dtos = service.getMenuItemsByCategory(name).stream()
                 .map(MenuItemMapper::toDTO)
@@ -77,6 +72,12 @@ public class MenuItemController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/category/id/{id}")
+    public ResponseEntity<List<MenuItemDTO>> getByCategoryId(@PathVariable("id") Long id) {
+        List<MenuItemDTO> dtos = service.getMenuItemsByCategoryId(id).stream()
+                .map(MenuItemMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
 
 }
-

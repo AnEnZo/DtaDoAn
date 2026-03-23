@@ -35,6 +35,7 @@ buildNumber.properties
 application-secret.properties
 src/main/resources/application-prod.properties
 src/main/resources/application-*.properties
+src/main/resources/application.properties
 
 ### NetBeans ###
 /nbproject/private/
@@ -49,4 +50,4 @@ build/
 ### VS Code ###
 .vscode/
 
-"src/main/resources/application.properties" 
+node_modules

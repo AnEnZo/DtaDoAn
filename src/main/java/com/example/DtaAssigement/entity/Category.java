@@ -1,6 +1,6 @@
 package com.example.DtaAssigement.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -20,14 +20,13 @@ public class Category {
     @Schema(hidden = true)
     private Long id;
 
-    @NotEmpty(message="Tên danh mục không được để trống")
+    @NotEmpty(message = "Tên danh mục không được để trống")
     @Size(max = 50, message = "Tên danh mục không được vượt quá 50 ký tự")
     private String name;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIgnore // Prevent infinite recursion
     @Schema(hidden = true)
     private List<MenuItem> items;
-
 
 }

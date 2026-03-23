@@ -2,7 +2,6 @@ package com.example.DtaAssigement.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -10,7 +9,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 
 @Entity
 @Getter
@@ -36,8 +34,10 @@ public class MenuItem {
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "category_id", nullable = false)
     @NotNull(message = "Danh mục món ăn không được để trống")
     private Category category;

@@ -1,7 +1,9 @@
 package com.example.DtaAssigement.controller;
 
-
+import com.example.DtaAssigement.dto.VoucherListWithPointsDTO;
+import com.example.DtaAssigement.entity.User;
 import com.example.DtaAssigement.entity.Voucher;
+import com.example.DtaAssigement.repository.UserRepository;
 import com.example.DtaAssigement.service.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,23 @@ public class VoucherController {
     @Autowired
     private VoucherService voucherService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER')")
-    public ResponseEntity<List<Voucher>> getAllVouchers() {
-        return ResponseEntity.ok(voucherService.getAllVouchers());
+    public ResponseEntity<?> getAllVouchers(@RequestParam(required = false) String username) {
+        List<Voucher> vouchers = voucherService.getAllVouchers();
+
+        // If username is provided, return with user points
+        if (username != null && !username.isEmpty()) {
+            User user = userRepository.findByUsername(username).orElse(null);
+            int points = (user != null && user.getRewardPoints() != null) ? user.getRewardPoints() : 0;
+            return ResponseEntity.ok(new VoucherListWithPointsDTO(vouchers, points));
+        }
+
+        // Otherwise, return just vouchers (for admin/staff)
+        return ResponseEntity.ok(vouchers);
     }
 
     @GetMapping("/{id}")
@@ -50,4 +65,3 @@ public class VoucherController {
         return ResponseEntity.noContent().build();
     }
 }
-

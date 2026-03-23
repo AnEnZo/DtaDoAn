@@ -1,7 +1,9 @@
 package com.example.DtaAssigement.controller;
 
+import com.example.DtaAssigement.dto.OnCreate;
 import com.example.DtaAssigement.dto.ResetPasswordRequest;
 import com.example.DtaAssigement.dto.UserDTO;
+import com.example.DtaAssigement.dto.UserUpdateDTO;
 import com.example.DtaAssigement.security.CustomUserDetails;
 import com.example.DtaAssigement.service.EmailOtpService;
 import com.example.DtaAssigement.service.UserService;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,21 +34,12 @@ public class UserController {
     private final UserService userService;
     private final EmailOtpService emailOtpService;
 
-
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<UserDTO>> getAllUsers(
-            @ParameterObject
-            @PageableDefault(
-                    page = 0,
-                    size = 10,
-                    sort = "id",
-                    direction = Sort.Direction.DESC
-            ) Pageable pageable
-    ) {
+            @ParameterObject @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
-
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
@@ -72,7 +66,7 @@ public class UserController {
 
     @PostMapping("/staff")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createStaff(@Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<?> createStaff(@Validated(OnCreate.class) @RequestBody UserDTO userDTO) {
         if (userService.existsByUsername(userDTO.getUsername())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Error: Username is already taken!");
@@ -86,6 +80,18 @@ public class UserController {
         return ResponseEntity.status(201).body(created);
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UserUpdateDTO updateDTO) {
+        try {
+            UserDTO updated = userService.updateUserWithRole(id, updateDTO, updateDTO.getRole());
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
+    }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -101,7 +107,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN','STAFF')")
     public ResponseEntity<UserDTO> getCurrentUser(@AuthenticationPrincipal CustomUserDetails currentUser) {
         // Lấy username từ CustomUserDetails
         String username = currentUser.getUsername();
@@ -110,17 +116,102 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN','STAFF')")
     public ResponseEntity<?> updateCurrentUser(
             @AuthenticationPrincipal CustomUserDetails currentUser,
-            @RequestBody Map<String, Object> updates
-    ) {
+            @RequestBody Map<String, Object> updates) {
         try {
             String username = currentUser.getUsername();
             UserDTO updated = userService.updateCurrentUser(username, updates);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    // Send OTP to current user's email to confirm sensitive updates (email/phone)
+    @PostMapping("/me/otp/send")
+    @PreAuthorize("hasAnyRole('USER','ADMIN','STAFF')")
+    public ResponseEntity<?> sendOtpForCurrentUser(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @RequestBody(required = false) Map<String, Object> body) {
+        try {
+            String username = currentUser.getUsername();
+            UserDTO current = userService.getUserByUsername(username);
+            String newEmail = body != null ? (String) body.get("email") : null;
+            String newPhone = body != null ? (String) body.get("phoneNumber") : null;
+
+            boolean emailChanged = newEmail != null && !newEmail.equals(current.getEmail());
+            boolean phoneChanged = newPhone != null && !newPhone.equals(current.getPhoneNumber());
+
+            if (!emailChanged && !phoneChanged) {
+                // No sensitive changes; do NOT send OTP
+                return ResponseEntity.ok(Map.of("message", "Không cần OTP cho thay đổi này."));
+            }
+
+            emailOtpService.createAndSendOtp(username);
+            return ResponseEntity.ok(Map.of("message", "OTP đã được gửi tới email."));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ex.getMessage());
+        }
+    }
+
+    // Verify OTP and apply provided updates (email/phone)
+    @PostMapping("/me/otp/verify-update")
+    @PreAuthorize("hasAnyRole('USER','ADMIN','STAFF')")
+    public ResponseEntity<?> verifyOtpAndUpdate(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @RequestBody Map<String, Object> body) {
+        try {
+            String username = currentUser.getUsername();
+            String otp = (String) body.get("otp");
+            if (otp == null || otp.isBlank()) {
+                return ResponseEntity.badRequest().body("OTP là bắt buộc");
+            }
+            // Validate OTP -> returns User if valid
+            var user = emailOtpService.validateOtpAndGetUser(username, otp);
+
+            // Only allow specific fields
+            Map<String, Object> updates = new java.util.HashMap<>();
+            if (body.containsKey("email"))
+                updates.put("email", body.get("email"));
+            if (body.containsKey("phoneNumber"))
+                updates.put("phoneNumber", body.get("phoneNumber"));
+
+            // Apply updates
+            UserDTO updated = userService.updateCurrentUser(username, updates);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException
+                | org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    /**
+     * API tạo người dùng với role tùy chọn, truyền qua query param role=USER|STAFF
+     * (mặc định USER)
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createUserByRole(
+            @RequestParam(name = "role", defaultValue = "USER") String role,
+            @Validated(OnCreate.class) @RequestBody UserDTO userDTO) {
+        if (userService.existsByUsername(userDTO.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error: Username is already taken!");
+        }
+
+        if (userService.existsByEmail(userDTO.getEmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error: Email is already in use!");
+        }
+        try {
+            UserDTO created = ((com.example.DtaAssigement.service.impl.UserServiceImpl) userService)
+                    .createUserWithRole(userDTO, role);
+            return ResponseEntity.status(201).body(created);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
 
@@ -135,10 +226,10 @@ public class UserController {
             userService.updatePassword(user, req.getNewPassword());
 
             return ResponseEntity.ok("Password đã được cập nhật thành công");
-        } catch (IllegalArgumentException | org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
+        } catch (IllegalArgumentException
+                | org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-
 
 }

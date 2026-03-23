@@ -68,7 +68,7 @@ public class UserVoucherServiceImpl implements UserVoucherService {
                     .used(false)
                     .code(code)
                     .qrCode("data:image/png;base64," + base64Qr)
-                    .expiryAt(LocalDateTime.now().plusDays(7))
+                    .expiryAt(LocalDateTime.now().plusDays(60))
                     .build();
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate QR code", e);

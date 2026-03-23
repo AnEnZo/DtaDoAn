@@ -22,7 +22,6 @@ public class CategoryController {
 
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('STAFF','ADMIN','USER')")
     public List<CategoryDTO> getAll() {
         return service.getAllCategories();
     }

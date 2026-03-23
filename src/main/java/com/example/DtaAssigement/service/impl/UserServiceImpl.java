@@ -1,7 +1,5 @@
 package com.example.DtaAssigement.service.impl;
 
-
-
 import com.example.DtaAssigement.dto.UserDTO;
 import com.example.DtaAssigement.ennum.AuthProvider;
 import com.example.DtaAssigement.entity.User;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.example.DtaAssigement.entity.Roles;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,14 +34,11 @@ public class UserServiceImpl implements UserService {
     private RolesRepository roleRepository;
     private PasswordEncoder passwordEncoder;
 
-
-
     @Override
     public Page<UserDTO> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable)
                 .map(UserMapper::toDTO);
     }
-
 
     public UserDTO getUserById(Long id) {
         return userRepository.findById(id)
@@ -70,7 +66,36 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toDTO(userRepository.save(user));
     }
 
-    public UserDTO createStaff(UserDTO userDTO){
+    /**
+     * Tạo user với role tùy chọn (USER hoặc STAFF)
+     */
+    public UserDTO createUserWithRole(UserDTO userDTO, String roleName) {
+        if (existsByUsername(userDTO.getUsername())) {
+            throw new IllegalArgumentException("Username đã có người sử dụng");
+        }
+        if (existsByEmail(userDTO.getEmail())) {
+            throw new IllegalArgumentException("Email đã có người sử dụng");
+        }
+
+        String normalized = (roleName == null ? "USER" : roleName).trim().toUpperCase();
+        if (!normalized.equals("USER") && !normalized.equals("STAFF")) {
+            throw new IllegalArgumentException("Role không hợp lệ. Chỉ chấp nhận USER hoặc STAFF");
+        }
+
+        Roles role = roleRepository.findByName("ROLE_" + normalized)
+                .orElseThrow(() -> new RuntimeException("Error: Role " + normalized + " không tồn tại"));
+
+        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+
+        User user = UserMapper.toEntity(userDTO);
+        user.setRoles(Set.of(role));
+        user.setPassword(encodedPassword);
+        user.setRewardPoints(0);
+        user.setProvider(AuthProvider.LOCAL);
+        return UserMapper.toDTO(userRepository.save(user));
+    }
+
+    public UserDTO createStaff(UserDTO userDTO) {
         if (existsByUsername(userDTO.getUsername())) {
             throw new IllegalArgumentException("Username đã có người sử dụng");
         }
@@ -93,43 +118,80 @@ public class UserServiceImpl implements UserService {
     public UserDTO updateUser(Long id, UserDTO userDTO) {
 
         User user = userRepository.findById(id).orElse(null);
-        if (user == null) return null;
+        if (user == null)
+            return null;
 
-        // Mã hóa mật khẩu
-        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+        // Mã hóa mật khẩu nếu có
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isBlank()) {
+            String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+            user.setPassword(encodedPassword);
+        }
 
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         user.setPhoneNumber(userDTO.getPhoneNumber());
-        user.setPassword(encodedPassword);
+
+        return UserMapper.toDTO(userRepository.save(user));
+    }
+
+    
+    /**
+     * Cập nhật user và (tuỳ chọn) cập nhật role USER/STAFF nếu roleName không null
+     * và user hiện tại không phải ADMIN
+     */
+    public UserDTO updateUserWithRole(Long id, com.example.DtaAssigement.dto.UserUpdateDTO userDTO, String roleName) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null)
+            return null;
+
+        // cập nhật thông tin cơ bản
+        user.setDisplayName(userDTO.getDisplayName());
+        user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+
+        // nếu user hiện tại có ADMIN thì không thay đổi role
+        boolean isAdmin = user.getRoles().stream().anyMatch(r -> "ROLE_ADMIN".equals(r.getName()));
+        if (!isAdmin && roleName != null && !roleName.isBlank()) {
+            String normalized = roleName.trim().toUpperCase();
+            if (!normalized.equals("USER") && !normalized.equals("STAFF")) {
+                throw new IllegalArgumentException("Role không hợp lệ. Chỉ chấp nhận USER hoặc STAFF");
+            }
+            Roles role = roleRepository.findByName("ROLE_" + normalized)
+                    .orElseThrow(() -> new RuntimeException("Error: Role " + normalized + " không tồn tại"));
+            user.setRoles(new HashSet<>(Set.of(role)));
+        }
+
         return UserMapper.toDTO(userRepository.save(user));
     }
 
     public boolean deleteUser(Long id) {
-        if (!userRepository.existsById(id)) return false;
+        if (!userRepository.existsById(id))
+            return false;
         userRepository.deleteById(id);
         return true;
     }
+
     @Override
-    public List<UserDTO> searchUser(String keyword){
+    public List<UserDTO> searchUser(String keyword) {
         return userRepository.findByUsernameContainingIgnoreCase(keyword).stream()
-                        .map(UserMapper::toDTO)
-                        .collect(Collectors.toList());
+                .map(UserMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public boolean existsByUsername(String username){
+    public boolean existsByUsername(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
 
     @Override
-    public boolean existsByEmail(String email){
+    public boolean existsByEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
 
     @Override
     public void registerNewUser(RegisterRequest registerRequest) {
-        if (existsByUsername(registerRequest.getUsername())){
+        if (existsByUsername(registerRequest.getUsername())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username đã có người sử dụng");
         }
         if (existsByEmail(registerRequest.getEmail())) {
@@ -155,7 +217,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findByEmail(String email){
+    public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
@@ -166,14 +228,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findByUsername(String username){
+    public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-
     @Override
     public User processOAuthUser(String provider, String providerId,
-                                 String email, String username, String displayname) {
+            String email, String username, String displayname) {
         Roles userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Error: Role USER không tồn tại"));
 
@@ -215,7 +276,8 @@ public class UserServiceImpl implements UserService {
         // Cập nhật từng trường nếu được truyền
         if (updates.containsKey("displayName")) {
             String dn = (String) updates.get("displayName");
-            if (dn == null || dn.isBlank()) throw new IllegalArgumentException("displayName không được để trống");
+            if (dn == null || dn.isBlank())
+                throw new IllegalArgumentException("displayName không được để trống");
             user.setDisplayName(dn);
         }
 
@@ -238,7 +300,5 @@ public class UserServiceImpl implements UserService {
         User saved = userRepository.save(user);
         return UserMapper.toDTO(saved);
     }
-
-
 
 }

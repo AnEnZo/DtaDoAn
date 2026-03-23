@@ -2,7 +2,6 @@ package com.example.DtaAssigement.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -20,12 +19,12 @@ public class OrderItem {
     @Schema(hidden = true)
     private Long id;
 
-    @Positive(message="số lượng phải lớn hơn 0")
+    @Positive(message = "số lượng phải lớn hơn 0")
     private int quantity;
 
     @ManyToOne
     @JoinColumn(name = "menu_item_id")
-    @JsonManagedReference
+    @JsonIgnore
     private MenuItem menuItem;
 
     @ManyToOne

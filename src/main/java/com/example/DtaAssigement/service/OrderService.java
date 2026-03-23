@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.time.LocalDate;
 
 public interface OrderService {
     Order createOrder(Long tableId);
@@ -14,6 +15,9 @@ public interface OrderService {
     OrderItem removeItemFromOrder(Long orderId, Long menuItemId, int quantityToRemove);
     List<Order> getOrdersByStatus(OrderStatus status);
     Page<Order> getAllOrders(Pageable pageable);
+    Page<Order> getOrdersByDateRange(LocalDate start, LocalDate end, Pageable pageable);
+    long countOrdersToday();
+    long countPendingOrders();
     boolean deleteOrder(Long id);
     Order updateOrderStatus(Long orderId, OrderStatus status);
     Order createTakeawayOrder();

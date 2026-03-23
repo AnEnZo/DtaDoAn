@@ -32,76 +32,75 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @AllArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CustomOAuth2UserService customOAuth2UserService;
+        private final CustomUserDetailsService userDetailsService;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final CustomOAuth2UserService customOAuth2UserService;
 
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+                return authConfig.getAuthenticationManager();
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http,
+                        AuthenticationConfiguration authConfig,
+                        OAuth2AuthenticationSuccessHandler oauth2SuccessHandler,
+                        HttpCookieOAuth2AuthorizationRequestRepository cookieAuthRepository) throws Exception {
+                http
+                                .cors(Customizer.withDefaults()) // 1. Bật CORS
+                                .csrf(AbstractHttpConfigurer::disable) // 2. Tắt CSRF
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(antMatcher("/api/auth/**"),
+                                                                antMatcher("/v3/api-docs/**"),
+                                                                antMatcher("/swagger-ui/**"),
+                                                                antMatcher("/swagger-ui.html"),
+                                                                antMatcher("/error"),
+                                                                antMatcher("/favicon.ico"),
+                                                                // MoMo: allow redirect landing page and IPN webhook
+                                                                // without auth
+                                                                antMatcher("/return/momo"),
+                                                                antMatcher("/api/invoices/webhook/momo"))
+                                                .permitAll()
+                                                .requestMatchers(antMatcher("/api/menu-items/**")).permitAll()
+                                                .requestMatchers(antMatcher("/api/categories/**")).permitAll()
+                                                .requestMatchers(antMatcher("/api/revenues/items/top")).permitAll()
+                                                .requestMatchers(antMatcher("/**/*.html"),
+                                                                antMatcher("/**/*.js"),
+                                                                antMatcher("/**/*.css"))
+                                                .permitAll()
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-                                           AuthenticationConfiguration authConfig,
-                                           OAuth2AuthenticationSuccessHandler oauth2SuccessHandler,
-                                           HttpCookieOAuth2AuthorizationRequestRepository cookieAuthRepository) throws Exception {
-        http
-                .cors(Customizer.withDefaults())       // 1. Bật CORS
-                .csrf(AbstractHttpConfigurer::disable) // 2. Tắt CSRF
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(antMatcher("/api/auth/**"),
-                                antMatcher("/v3/api-docs/**"),
-                                antMatcher("/swagger-ui/**"),
-                                antMatcher("/swagger-ui.html"),
-                                antMatcher("/error"),
-                                antMatcher("/favicon.ico")).permitAll()
+                                                .requestMatchers("/ws/**").permitAll()
 
-                        .requestMatchers(antMatcher("/**/*.html"),
-                                antMatcher("/**/*.js"),
-                                antMatcher("/**/*.css")).permitAll()
+                                                .anyRequest().authenticated())
 
-                        .requestMatchers("/ws/**").permitAll()
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                        .anyRequest().authenticated()
-                )
+                                // Cấu hình OAuth2 login
+                                .oauth2Login(oauth2 -> oauth2
+                                                .authorizationEndpoint(auth -> auth
+                                                                .authorizationRequestRepository(cookieAuthRepository))
+                                                .redirectionEndpoint(redir -> redir
+                                                                .baseUri("/login/oauth2/code/*"))
+                                                .userInfoEndpoint(userInfo -> userInfo
+                                                                .userService(customOAuth2UserService))
+                                                .successHandler(oauth2SuccessHandler))
 
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-                // Cấu hình OAuth2 login
-                .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(auth -> auth
-                                .authorizationRequestRepository(cookieAuthRepository)
-                        )
-                        .redirectionEndpoint(redir -> redir
-                                .baseUri("/oauth2/callback/*")
-                        )
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
-                        .successHandler(oauth2SuccessHandler)
-                )
+                return http.build();
+        }
 
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOriginPatterns(List.of("*"));
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*"));
-        cfg.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
-        src.registerCorsConfiguration("/**", cfg);
-        return src;
-    }
-
-
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration cfg = new CorsConfiguration();
+                cfg.setAllowedOriginPatterns(List.of("*"));
+                cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                cfg.setAllowedHeaders(List.of("*"));
+                cfg.setAllowCredentials(true);
+                UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+                src.registerCorsConfiguration("/**", cfg);
+                return src;
+        }
 
 }

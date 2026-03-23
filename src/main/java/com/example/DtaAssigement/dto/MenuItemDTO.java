@@ -28,6 +28,8 @@ public class MenuItemDTO {
     @NotBlank(message = "Ảnh món ăn không được để trống")
     private String imageUrl;
 
+    private String description;
+
     @NotNull(message = "Danh mục món ăn không được để trống")
     private CategoryDTO category;
 

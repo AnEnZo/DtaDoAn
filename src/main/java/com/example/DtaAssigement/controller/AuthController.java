@@ -31,7 +31,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class AuthController {
 
-
     private UserService userService;
     private UserRepository userRepository;
     private AuthenticationManager authenticationManager;
@@ -39,7 +38,6 @@ public class AuthController {
     private final SmsService smsService;
     private final UserRepository userRepo;
     private final EmailOtpService emailOtpService;
-
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -56,9 +54,7 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsername(),
-                            loginRequest.getPassword()
-                    )
-            );
+                            loginRequest.getPassword()));
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String token = jwtTokenUtil.generateToken(userDetails);
@@ -87,7 +83,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password-email")
-    public ResponseEntity<?> forgotPasswordEmail(@RequestBody Map<String,String> body) {
+    public ResponseEntity<?> forgotPasswordEmail(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         if (username == null || username.isBlank()) {
             return ResponseEntity.badRequest().body("username is required");
@@ -130,8 +126,8 @@ public class AuthController {
 
     @PostMapping("/reset-password-sms")
     public ResponseEntity<?> resetPasswordBySms(@RequestParam("username") String username,
-                                                @RequestParam("otp") String otp,
-                                                @RequestParam("newPassword") String newPassword) {
+            @RequestParam("otp") String otp,
+            @RequestParam("newPassword") String newPassword) {
 
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + username));

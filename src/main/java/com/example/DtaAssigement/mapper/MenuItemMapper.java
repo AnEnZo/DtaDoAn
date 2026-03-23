@@ -1,6 +1,5 @@
 package com.example.DtaAssigement.mapper;
 
-
 import com.example.DtaAssigement.dto.MenuItemDTO;
 
 import com.example.DtaAssigement.entity.Category;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class MenuItemMapper {
 
-
     public static MenuItemDTO toDTO(MenuItem entity) {
         if (entity == null) {
             return null;
@@ -22,10 +20,10 @@ public class MenuItemMapper {
                 .name(entity.getName())
                 .price(entity.getPrice())
                 .imageUrl(entity.getImageUrl())
+                .description(entity.getDescription())
                 .category(CategoryMapper.toDTO(entity.getCategory()))
                 .build();
     }
-
 
     public static MenuItem toEntity(MenuItemDTO dto, Category category) {
         if (dto == null) {
@@ -36,10 +34,10 @@ public class MenuItemMapper {
         entity.setName(dto.getName());
         entity.setPrice(dto.getPrice());
         entity.setImageUrl(dto.getImageUrl());
+        entity.setDescription(dto.getDescription());
         entity.setCategory(category);
 
         return entity;
     }
 
 }
-

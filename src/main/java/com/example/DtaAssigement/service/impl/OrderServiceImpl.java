@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.service.impl;
 
+import com.example.DtaAssigement.aop.audit.Auditable;
 import com.example.DtaAssigement.ennum.OrderStatus;
 import com.example.DtaAssigement.ennum.OrderType;
 import com.example.DtaAssigement.entity.*;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -21,14 +23,12 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-
     private final OrderRepository orderRepo;
     private final TableRepository tableRepo;
     private final MenuItemRepository menuItemRepo;
     private final OrderItemRepository orderItemRepo;
     private final UserRepository userRepo;
     private final JwtTokenUtil jwtTokenUtil;
-
 
     @Override
     public Order getOrderById(Long id) {
@@ -37,6 +37,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Auditable(action = "CREATE_ORDER", entityType = "ORDER", description = "Create new dine-in order")
     public Order createOrder(Long tableId) {
         RestaurantTable table = tableRepo.findById(tableId)
                 .orElseThrow(() -> new NoSuchElementException("Table not found: " + tableId));
@@ -45,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("Table " + tableId + " đã có người !");
         }
 
-        String nameStaff =jwtTokenUtil.getCurrentUsername();
+        String nameStaff = jwtTokenUtil.getCurrentUsername();
         User staff = userRepo.findByUsername(nameStaff)
                 .orElseThrow(() -> new IllegalStateException("Staff not found: " + nameStaff));
 
@@ -78,7 +79,6 @@ public class OrderServiceImpl implements OrderService {
         return orderRepo.save(order);
     }
 
-
     @Override
     public OrderItem addItemToOrder(Long orderId, Long menuItemId, int quantity) {
         Order order = orderRepo.findById(orderId)
@@ -86,10 +86,10 @@ public class OrderServiceImpl implements OrderService {
         MenuItem item = menuItemRepo.findById(menuItemId)
                 .orElseThrow(() -> new NoSuchElementException("MenuItem not found: " + menuItemId));
 
-        if (item.getCategory() == null ) {
+        if (item.getCategory() == null) {
             throw new IllegalStateException("Thiếu thông tin chi nhánh hoặc danh mục món ăn.");
         }
-        if(order.getStatus().toString()!=OrderStatus.PAID.toString()){
+        if (order.getStatus().toString() == OrderStatus.PAID.toString()) {
             throw new IllegalStateException("Đơn hàng đã thanh toán không thể sửa món");
         }
 
@@ -127,10 +127,31 @@ public class OrderServiceImpl implements OrderService {
         return orderRepo.findAll(pageable);
     }
 
+    @Override
+    public Page<Order> getOrdersByDateRange(LocalDate start, LocalDate end, Pageable pageable) {
+        LocalDateTime startDt = start.atStartOfDay();
+        LocalDateTime endDt = end.plusDays(1).atStartOfDay().minusNanos(1);
+        return orderRepo.findByOrderTimeBetween(startDt, endDt, pageable);
+    }
 
+    @Override
+    public long countOrdersToday() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
+        return orderRepo.countByOrderTimeBetween(start, end);
+    }
 
-    public boolean deleteOrder(Long id){
-        if(!orderRepo.existsById(id)){return false;}
+    @Override
+    public long countPendingOrders() {
+        return orderRepo.countByStatus(OrderStatus.PENDING);
+    }
+
+    @Auditable(action = "DELETE_ORDER", entityType = "ORDER", description = "Delete order")
+    public boolean deleteOrder(Long id) {
+        if (!orderRepo.existsById(id)) {
+            return false;
+        }
         Order order = orderRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Order not found: " + id));
 
@@ -143,12 +164,25 @@ public class OrderServiceImpl implements OrderService {
         orderRepo.deleteById(id);
         return true;
     }
+
     @Override
+    @Auditable(action = "UPDATE_ORDER_STATUS", entityType = "ORDER", description = "Update order status")
     public Order updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Order not found: " + orderId));
+        // Guard valid transitions: PENDING -> SERVED -> PAID
+        if (status == OrderStatus.SERVED) {
+            if (order.getStatus() != OrderStatus.PENDING) {
+                throw new IllegalStateException("Only PENDING orders can be served");
+            }
+        }
+        if (status == OrderStatus.PAID) {
+            if (order.getStatus() != OrderStatus.SERVED) {
+                throw new IllegalStateException("Only SERVED orders can be paid");
+            }
+        }
         order.setStatus(status);
-        if(status == OrderStatus.PAID) {
+        if (status == OrderStatus.PAID) {
             RestaurantTable table = order.getTable();
             table.setAvailable(true);
             tableRepo.save(table);
@@ -164,12 +198,12 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Order not found: " + orderId));
 
-//        OrderItem orderItem = order.getOrderItems().stream()
-//                .filter(item -> item.getMenuItem().getId().equals(menuItemId))
-//                .findFirst()
-//                .orElseThrow(() -> new NoSuchElementException("Item not found in order"));
+        // OrderItem orderItem = order.getOrderItems().stream()
+        // .filter(item -> item.getMenuItem().getId().equals(menuItemId))
+        // .findFirst()
+        // .orElseThrow(() -> new NoSuchElementException("Item not found in order"));
 
-        if(order.getStatus().toString()!=OrderStatus.PAID.toString()){
+        if (order.getStatus().toString() == OrderStatus.PAID.toString()) {
             throw new IllegalStateException("Đơn hàng đã thanh toán không thể sửa món");
         }
 
@@ -181,7 +215,6 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Số lượng cần xóa vượt quá số lượng hiện tại trong đơn hàng");
         }
 
-
         if (quantityToRemove == currentQuantity) {
             orderItemRepo.delete(orderItem);
             return null; // hoặc throw custom response
@@ -191,13 +224,10 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-
     @Override
     public Order getLatestOrderByTableId(Long tableId) {
         return orderRepo.findTopByTableIdOrderByOrderTimeDesc(tableId)
                 .orElseThrow(() -> new NoSuchElementException("No order found for table " + tableId));
     }
-
-
 
 }
