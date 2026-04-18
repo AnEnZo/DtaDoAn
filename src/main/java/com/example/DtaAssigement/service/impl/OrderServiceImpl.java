@@ -89,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
         if (item.getCategory() == null) {
             throw new IllegalStateException("Thiếu thông tin chi nhánh hoặc danh mục món ăn.");
         }
-        if (order.getStatus().toString() == OrderStatus.PAID.toString()) {
+        if (order.getStatus() == OrderStatus.PAID) {
             throw new IllegalStateException("Đơn hàng đã thanh toán không thể sửa món");
         }
 
@@ -203,7 +203,7 @@ public class OrderServiceImpl implements OrderService {
         // .findFirst()
         // .orElseThrow(() -> new NoSuchElementException("Item not found in order"));
 
-        if (order.getStatus().toString() == OrderStatus.PAID.toString()) {
+        if (order.getStatus() == OrderStatus.PAID) {
             throw new IllegalStateException("Đơn hàng đã thanh toán không thể sửa món");
         }
 
