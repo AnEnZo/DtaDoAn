@@ -1,19 +1,24 @@
 package com.example.DtaAssigement.aop.caching;
 
+import com.example.DtaAssigement.config.RedisConfig;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Redis-based cache manager
  * Thread-safe implementation using RedisTemplate
  * Replaces ConcurrentHashMap with distributed Redis cache
+ * Handles Redis connection failures gracefully with automatic retry
  */
 @Component
 @Slf4j
@@ -21,18 +26,84 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CustomCacheManager {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisConfig redisConfig;
 
     // Statistics (stored in Redis)
     private static final String STATS_HIT_KEY = "cache:stats:hits";
     private static final String STATS_MISS_KEY = "cache:stats:misses";
     private static final String CACHE_KEY_PREFIX = "cafe::";
 
+    @Getter
+    private final AtomicReference<ConnectionState> connectionState =
+            new AtomicReference<>(ConnectionState.UNKNOWN);
+
+    private long lastSuccessfulOperation = 0;
+    private static final long RECONNECT_CHECK_INTERVAL = 30000; // 30 seconds
+
+    public enum ConnectionState {
+        UNKNOWN,
+        CONNECTED,
+        DISCONNECTED,
+        ERROR
+    }
+
+    @PostConstruct
+    public void init() {
+        updateConnectionState();
+    }
+
     /**
-     * Get value from cache
+     * Periodically check and update connection state
+     */
+    @Scheduled(fixedDelay = RECONNECT_CHECK_INTERVAL, initialDelay = RECONNECT_CHECK_INTERVAL)
+    public void checkConnectionState() {
+        updateConnectionState();
+    }
+
+    /**
+     * Update the connection state based on Redis availability
+     */
+    private void updateConnectionState() {
+        if (redisTemplate == null) {
+            setConnectionState(ConnectionState.DISCONNECTED);
+            return;
+        }
+
+        try {
+            redisTemplate.getConnectionFactory().getConnection().ping();
+            if (connectionState.get() != ConnectionState.CONNECTED) {
+                log.info("✅ Redis connection restored. Cache operations resumed.");
+            }
+            setConnectionState(ConnectionState.CONNECTED);
+        } catch (Exception e) {
+            if (connectionState.get() != ConnectionState.DISCONNECTED) {
+                log.warn("⚠️ Redis connection lost: {}. Cache operations will be skipped until reconnection.",
+                        e.getMessage());
+            }
+            setConnectionState(ConnectionState.DISCONNECTED);
+        }
+    }
+
+    private void setConnectionState(ConnectionState newState) {
+        ConnectionState oldState = connectionState.getAndSet(newState);
+        if (oldState != newState) {
+            log.debug("Redis connection state changed: {} -> {}", oldState, newState);
+        }
+    }
+
+    /**
+     * Check if cache operations can be performed
+     */
+    public boolean isAvailable() {
+        return redisTemplate != null && connectionState.get() == ConnectionState.CONNECTED;
+    }
+
+    /**
+     * Get value from cache with retry logic
      * Returns null if Redis is unavailable
      */
     public Object get(String key) {
-        if (redisTemplate == null) {
+        if (redisTemplate == null || !isAvailable()) {
             log.debug("Redis unavailable - Cache GET skipped: {}", key);
             return null;
         }
@@ -48,8 +119,12 @@ public class CustomCacheManager {
             }
 
             incrementHit();
+            lastSuccessfulOperation = System.currentTimeMillis();
             log.debug("Cache HIT: {}", key);
             return value;
+        } catch (RedisConnectionFailureException e) {
+            handleConnectionFailure(e);
+            return null;
         } catch (Exception e) {
             log.warn("Redis error during GET operation for key '{}': {}", key, e.getMessage());
             return null;
@@ -57,11 +132,11 @@ public class CustomCacheManager {
     }
 
     /**
-     * Put value into cache with TTL
+     * Put value into cache with retry logic
      * Silently skips if Redis is unavailable
      */
     public void put(String key, Object value, int ttlSeconds) {
-        if (redisTemplate == null) {
+        if (redisTemplate == null || !isAvailable()) {
             log.debug("Redis unavailable - Cache PUT skipped: {}", key);
             return;
         }
@@ -69,7 +144,10 @@ public class CustomCacheManager {
         try {
             String redisKey = CACHE_KEY_PREFIX + key;
             redisTemplate.opsForValue().set(redisKey, value, ttlSeconds, TimeUnit.SECONDS);
+            lastSuccessfulOperation = System.currentTimeMillis();
             log.debug("Cache PUT: {} (TTL: {}s)", key, ttlSeconds);
+        } catch (RedisConnectionFailureException e) {
+            handleConnectionFailure(e);
         } catch (Exception e) {
             log.warn("Redis error during PUT operation for key '{}': {}", key, e.getMessage());
         }
@@ -80,7 +158,7 @@ public class CustomCacheManager {
      * Silently skips if Redis is unavailable
      */
     public void evict(String key) {
-        if (redisTemplate == null) {
+        if (redisTemplate == null || !isAvailable()) {
             log.debug("Redis unavailable - Cache EVICT skipped: {}", key);
             return;
         }
@@ -88,10 +166,37 @@ public class CustomCacheManager {
         try {
             String redisKey = CACHE_KEY_PREFIX + key;
             redisTemplate.delete(redisKey);
+            lastSuccessfulOperation = System.currentTimeMillis();
             log.debug("Cache EVICT: {}", key);
+        } catch (RedisConnectionFailureException e) {
+            handleConnectionFailure(e);
         } catch (Exception e) {
             log.warn("Redis error during EVICT operation for key '{}': {}", key, e.getMessage());
         }
+    }
+
+    /**
+     * Handle Redis connection failure
+     */
+    private void handleConnectionFailure(Exception e) {
+        setConnectionState(ConnectionState.DISCONNECTED);
+        log.warn("⚠️ Redis connection failed: {}. Will retry on next operation.", e.getMessage());
+    }
+
+    /**
+     * Force a connection check
+     */
+    public void refreshConnection() {
+        log.info("🔄 Refreshing Redis connection...");
+        redisConfig.refreshConnection();
+        updateConnectionState();
+    }
+
+    /**
+     * Check if Redis should be available based on last operation time
+     */
+    public boolean shouldRetryConnection() {
+        return System.currentTimeMillis() - lastSuccessfulOperation > RECONNECT_CHECK_INTERVAL;
     }
 
     /**
@@ -108,7 +213,7 @@ public class CustomCacheManager {
      * Silently skips if Redis is unavailable
      */
     public void clear() {
-        if (redisTemplate == null) {
+        if (redisTemplate == null || !isAvailable()) {
             log.debug("Redis unavailable - Cache CLEAR skipped");
             return;
         }
@@ -117,8 +222,11 @@ public class CustomCacheManager {
             Set<String> keys = redisTemplate.keys(CACHE_KEY_PREFIX + "*");
             if (keys != null && !keys.isEmpty()) {
                 Long deleted = redisTemplate.delete(keys);
+                lastSuccessfulOperation = System.currentTimeMillis();
                 log.info("Cache CLEARED: {} entries removed", deleted);
             }
+        } catch (RedisConnectionFailureException e) {
+            handleConnectionFailure(e);
         } catch (Exception e) {
             log.warn("Redis error during CLEAR operation: {}", e.getMessage());
         }
@@ -129,9 +237,9 @@ public class CustomCacheManager {
      * Returns empty stats if Redis is unavailable
      */
     public CacheStats getStats() {
-        if (redisTemplate == null) {
+        if (redisTemplate == null || !isAvailable()) {
             log.debug("Redis unavailable - returning empty stats");
-            return new CacheStats(0, 0L, 0L, 0.0);
+            return new CacheStats(0, 0L, 0L, 0.0, connectionState.get().name());
         }
 
         try {
@@ -140,14 +248,13 @@ public class CustomCacheManager {
             long total = hits + misses;
             double hitRate = total > 0 ? (double) hits / total * 100 : 0;
 
-            // Get cache size
             Set<String> keys = redisTemplate.keys(CACHE_KEY_PREFIX + "*");
             int size = keys != null ? keys.size() : 0;
 
-            return new CacheStats(size, hits, misses, hitRate);
+            return new CacheStats(size, hits, misses, hitRate, connectionState.get().name());
         } catch (Exception e) {
             log.warn("Redis error during GET_STATS operation: {}", e.getMessage());
-            return new CacheStats(0, 0L, 0L, 0.0);
+            return new CacheStats(0, 0L, 0L, 0.0, connectionState.get().name());
         }
     }
 
@@ -156,7 +263,7 @@ public class CustomCacheManager {
      * Silently skips if Redis is unavailable
      */
     public void resetStats() {
-        if (redisTemplate == null) {
+        if (redisTemplate == null || !isAvailable()) {
             log.debug("Redis unavailable - Stats RESET skipped");
             return;
         }
@@ -164,7 +271,10 @@ public class CustomCacheManager {
         try {
             redisTemplate.delete(STATS_HIT_KEY);
             redisTemplate.delete(STATS_MISS_KEY);
+            lastSuccessfulOperation = System.currentTimeMillis();
             log.info("Cache statistics reset");
+        } catch (RedisConnectionFailureException e) {
+            handleConnectionFailure(e);
         } catch (Exception e) {
             log.warn("Redis error during RESET_STATS operation: {}", e.getMessage());
         }
@@ -180,7 +290,7 @@ public class CustomCacheManager {
 
     // Helper methods for statistics
     private void incrementHit() {
-        if (redisTemplate != null) {
+        if (redisTemplate != null && isAvailable()) {
             try {
                 redisTemplate.opsForValue().increment(STATS_HIT_KEY);
             } catch (Exception e) {
@@ -190,7 +300,7 @@ public class CustomCacheManager {
     }
 
     private void incrementMiss() {
-        if (redisTemplate != null) {
+        if (redisTemplate != null && isAvailable()) {
             try {
                 redisTemplate.opsForValue().increment(STATS_MISS_KEY);
             } catch (Exception e) {
@@ -200,7 +310,7 @@ public class CustomCacheManager {
     }
 
     private Long getStatValue(String key) {
-        if (redisTemplate == null) {
+        if (redisTemplate == null || !isAvailable()) {
             return 0L;
         }
 
@@ -220,6 +330,7 @@ public class CustomCacheManager {
             int size,
             long hits,
             long misses,
-            double hitRate) {
+            double hitRate,
+            String connectionState) {
     }
 }
