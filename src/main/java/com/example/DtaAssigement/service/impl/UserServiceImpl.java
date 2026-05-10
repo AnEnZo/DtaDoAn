@@ -292,8 +292,8 @@ public class UserServiceImpl implements UserService {
 
         if (updates.containsKey("phoneNumber")) {
             String phone = (String) updates.get("phoneNumber");
-            if (!phone.matches("^[0-9]{10,11}$"))
-                throw new IllegalArgumentException("SĐT không hợp lệ");
+            if (!phone.matches("^[0-9]{10}$"))
+                throw new IllegalArgumentException("SĐT phải là 10 chữ số");
             user.setPhoneNumber(phone);
         }
 

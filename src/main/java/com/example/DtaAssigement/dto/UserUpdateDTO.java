@@ -29,7 +29,7 @@ public class UserUpdateDTO {
     @Email(message = "Email không hợp lệ")
     private String email;
 
-    @Pattern(regexp = "^[0-9]{10,11}$", message = "SĐT không hợp lệ, vui lòng nhập lại")
+    @Pattern(regexp = "^[0-9]{10}$", message = "SĐT phải là 10 chữ số")
     private String phoneNumber;
 
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)

@@ -5,17 +5,134 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Handler for validation errors (e.g., @Valid on @RequestBody)
+     * Returns concise, user-friendly error messages
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        String errorMessage = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> {
+                    String fieldName = convertFieldName(error.getField());
+                    String message = error.getDefaultMessage() != null ? error.getDefaultMessage() : "Giá trị không hợp lệ";
+                    return fieldName + ": " + message;
+                })
+                .collect(Collectors.joining("; "));
+
+        if (errorMessage.isEmpty()) {
+            errorMessage = "Dữ liệu không hợp lệ";
+        }
+
+        String response = String.format("""
+        {
+            "timestamp": "%s",
+            "status": 400,
+            "error": "Bad Request",
+            "message": "%s",
+            "path": "%s"
+        }
+        """,
+                LocalDateTime.now(),
+                errorMessage,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Handler for type mismatch errors (e.g., invalid enum values)
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<String> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        String message = String.format("Giá trị '%s' không hợp lệ cho trường '%s'",
+                ex.getValue(), convertFieldName(ex.getName()));
+
+        String response = String.format("""
+        {
+            "timestamp": "%s",
+            "status": 400,
+            "error": "Bad Request",
+            "message": "%s",
+            "path": "%s"
+        }
+        """,
+                LocalDateTime.now(),
+                message,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Handler for malformed JSON or unreadable request body
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<String> handleMessageNotReadable(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String message = "Dữ liệu gửi lên không hợp lệ";
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            String causeMessage = cause.getMessage();
+            if (causeMessage != null && causeMessage.contains("Cannot deserialize")) {
+                message = "Định dạng dữ liệu không đúng";
+            } else if (causeMessage != null && causeMessage.contains("com.fasterxml.jackson")) {
+                message = "Dữ liệu JSON không hợp lệ";
+            }
+        }
+
+        String response = String.format("""
+        {
+            "timestamp": "%s",
+            "status": 400,
+            "error": "Bad Request",
+            "message": "%s",
+            "path": "%s"
+        }
+        """,
+                LocalDateTime.now(),
+                message,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Convert snake_case or camelCase field names to Vietnamese field names
+     */
+    private String convertFieldName(String fieldName) {
+        return switch (fieldName) {
+            case "displayName" -> "Tên hiển thị";
+            case "phoneNumber" -> "Số điện thoại";
+            case "email" -> "Email";
+            case "username" -> "Tên đăng nhập";
+            case "password" -> "Mật khẩu";
+            case "rewardPoints" -> "Điểm thưởng";
+            case "role", "roles" -> "Quyền";
+            case "provider" -> "Nhà cung cấp";
+            default -> fieldName;
+        };
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllExceptions(Exception ex, HttpServletRequest request) {
         // Lấy chi tiết stack trace

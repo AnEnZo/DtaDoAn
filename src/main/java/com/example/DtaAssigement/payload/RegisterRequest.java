@@ -4,6 +4,7 @@ import lombok.*;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 
@@ -25,6 +26,7 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "PhoneNumber is mandatory")
+    @Pattern(regexp = "^[0-9]{10}$", message = "SĐT phải là 10 chữ số")
     private String phoneNumber;
 
     @NotBlank(message = "Password is mandatory")
