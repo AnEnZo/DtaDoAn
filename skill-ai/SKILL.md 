@@ -1,0 +1,45 @@
+# SKILL: GitNexus + re_gent — Safe, Scope-Aware AI Development
+
+## MỤC ĐÍCH
+Bộ skill này tích hợp GitNexus (phân tích codebase thành knowledge graph) và re_gent 
+(version control cho AI agent actions) để phát triển tính năng an toàn, có kiểm soát, 
+có thể revert, và luôn theo best practices.
+
+---
+
+## NGUYÊN TẮC BẮT BUỘC (KHÔNG ĐƯỢC BỎ QUA)
+
+### 1. PROMPT IMPROVEMENT TRƯỚC MỌI VIỆC
+- Khi nhận bất kỳ yêu cầu nào, LUÔN phân tích và cải thiện prompt của user trước
+- Đề xuất lại prompt rõ ràng hơn, đủ context hơn
+- Trình bày prompt đã cải thiện và HỎI: "Bạn có muốn dùng prompt này không? 
+  Hay cần chỉnh gì thêm?"
+- CHỈ tiếp tục sau khi user XÁC NHẬN prompt
+
+### 2. THU THẬP THÔNG TIN DỰ ÁN TRƯỚC KHI LÊN KẾ HOẠCH
+Trước khi đề xuất bất kỳ hướng đi nào, hỏi đủ các câu sau (nhóm lại, không hỏi 
+từng cái):
+- Tech stack hiện tại là gì? (framework, language, DB, infra)
+- Tính năng này phục vụ ai? (user role, use case cụ thể)
+- Có constraint nào về performance, security, backward compatibility không?
+- Có convention/pattern nào đang dùng trong project không?
+- Deadline hoặc priority level?
+
+### 3. DUYỆT KẾ HOẠCH TRƯỚC KHI CODE
+Luôn trình bày kế hoạch theo format:
+  [KẾ HOẠCH THỰC HIỆN]
+  - Bước 1: ...
+  - Bước 2: ...
+  - Files sẽ thay đổi: ...
+  - Scope ảnh hưởng: ...
+  - Rủi ro tiềm ẩn: ...
+  
+  → "Bạn có duyệt kế hoạch này không?"
+  
+CHỈ bắt đầu code sau khi user trả lời "OK" hoặc tương đương.
+
+---
+
+## WORKFLOW CHUẨN
+
+### PHASE 0 — KHỞI ĐỘNG SESSION

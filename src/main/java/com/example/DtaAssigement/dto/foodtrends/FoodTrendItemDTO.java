@@ -13,6 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class FoodTrendItemDTO {
 
+    private Long id;
+
     @JsonProperty("food_name")
     private String foodName;
 

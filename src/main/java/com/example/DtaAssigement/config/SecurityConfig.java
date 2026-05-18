@@ -54,6 +54,7 @@ public class SecurityConfig {
                                                                 antMatcher("/v3/api-docs/**"),
                                                                 antMatcher("/swagger-ui/**"),
                                                                 antMatcher("/swagger-ui.html"),
+                                                                antMatcher("/docs/**"),
                                                                 antMatcher("/error"),
                                                                 antMatcher("/favicon.ico"),
                                                                 // MoMo: allow redirect landing page and IPN webhook

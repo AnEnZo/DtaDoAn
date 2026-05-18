@@ -171,9 +171,82 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 ## CHƯƠNG 3: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG {#chương-3-phân-tích-và-thiết-kế-hệ-thống .unnumbered}
 
-### 3.1. Sơ đồ Use Case (Tình huống sử dụng) {#sơ-đồ-use-case-tình-huống-sử-dụng .unnumbered}
+### 3.1. Khảo sát hệ thống
 
-#### 3.1.1. Use Case Tổng quan {#use-case-tổng-quan .unnumbered}
+#### 3.1.1. Giới thiệu đơn vị khảo sát
+- **Đơn vị khảo sát:** Quán cafe THECOFFEE247.
+- **Hoạt động:** Phục vụ khách hàng với đa dạng các loại đồ uống, cafe và đặc biệt là các món ăn "hot trend" hiện tại. Hoạt động từ sớm đến tối muộn, phục vụ khách hàng dùng tại chỗ và mang đi.
+- **Quy mô:** Không gian thiết kế thoải mái, chia thành nhiều khu vực bàn phục vụ, phù hợp với mọi lứa tuổi khách hàng.
+
+#### 3.1.2. Khảo sát quy trình của cửa hàng
+THECOFFEE247 là đơn vị kinh doanh dịch vụ F&B (Ăn uống) với danh mục sản phẩm phong phú. Hoạt động bán hàng được triển khai linh hoạt qua hình thức bán trực tiếp tại quầy, phục vụ tại bàn và hỗ trợ mua mang đi (Takeaway). Về phương thức thanh toán, quán hỗ trợ đa dạng từ tiền mặt, thanh toán động qua mã QR (dynamic QR Momo), và thanh toán thẻ qua Paypal, đảm bảo tính thuận tiện, nhanh chóng. Tuy nhiên, sự phối hợp giữa bộ phận order, pha chế và thu ngân vào giờ cao điểm cần được tối ưu thông qua phần mềm để tránh sai sót và quá tải.
+
+##### 3.1.2.1. Hình thức khảo sát
+- Phỏng vấn
+- Quan sát hiện trường
+- Nghiên cứu tài liệu
+
+##### 3.1.2.2. Đối tượng khảo sát
+- **Nhân viên bán hàng:** Lê Bá Phú, Nguyễn Văn Đức.
+- **Người quản lý:** Lê Tuấn Anh.
+- **Người phỏng vấn:** Hoàng Mạnh Hoàn.
+
+*Phỏng vấn nhân viên bán hàng:*
+Ngày phỏng vấn: 01/04/2026
+Nội dung phỏng vấn: Nghiệp vụ và công việc của nhân viên bán hàng
+
+| STT | Câu hỏi | Câu trả lời của nhân viên | Ghi chú |
+|-----|---------|---------------------------|---------|
+| 1 | Cửa hàng bán các sản phẩm nào? | Quán phục vụ khách hàng với nhiều loại cafe, đồ uống và các món ăn hot trend hiện tại. | |
+| 2 | Khi khách hàng đến cửa hàng, quy trình đón tiếp và tư vấn khách như thế nào? | Khách đến cửa hàng sẽ được mời vào bàn hoặc đặt tại quầy; nhân viên sẽ giới thiệu menu, các món mới hoặc hot trend phù hợp với nhu cầu của khách. | |
+| 3 | Các phương thức bán hàng của quán? | Hiện tại quán đang phục vụ dùng tại bàn (dine-in) và bán mang về (takeaway). | |
+| 4 | Khách hàng có được hưởng ưu đãi gì không? | Có đối với khách hàng thân thiết sẽ được tặng voucher giảm giá cho lần mua tiếp theo tại cửa hàng. | |
+| 5 | Anh/chị tiếp nhận thanh toán bằng những hình thức nào? | Khách hàng có nhiều lựa chọn thanh toán khác nhau như tiền mặt, dynamic QR Momo, và thanh toán thẻ Paypal. | |
+| 6 | Trong quá trình làm việc, anh/chị thường gặp khó khăn gì? | Hiện tại, việc quản lý hóa đơn, chuyển đơn cho pha chế và theo dõi trạng thái bàn đôi khi còn thủ công hoặc chưa đồng bộ, dẫn đến quá tải khi đông khách. Việc thanh toán nhiều hình thức cũng cần thao tác nhanh chóng hơn. | |
+
+*Phỏng vấn người quản lý:*
+Ngày phỏng vấn: 01/04/2026
+Người được phỏng vấn: Lê Tuấn Anh
+
+| STT | Câu hỏi | Câu trả lời của người quản lý | Ghi chú |
+|-----|---------|------------------------------|---------|
+| 1 | Anh/chị có thể mô tả quy trình quản lý hoạt động hàng ngày của cửa hàng? | Ca làm việc từ sáng sớm đến tối muộn. Công việc bao gồm phân công nhân viên, dọn dẹp, kiểm tra nguyên liệu, và quản lý các khu vực bàn phục vụ. | |
+| 2 | Anh/chị theo dõi doanh thu và số lượng đơn hàng trong ngày bằng cách nào? | Hiện tại chủ yếu theo dõi doanh số và đơn hàng qua sổ sách và tổng kết cuối ngày, đôi khi gặp sai sót nếu lượng đơn quá lớn. | |
+| 3 | Nếu được xây dựng một phần mềm quản lý mới, anh/chị mong muốn có những tính năng gì? | Chúng tôi cần một hệ thống quản lý có thể tối ưu việc order từ bàn đến quầy pha chế, tích hợp sẵn các phương thức thanh toán Momo/Paypal, đảm bảo bảo mật và cung cấp các báo cáo thống kê doanh thu theo ngày, tháng, năm để nắm bắt tình hình và đưa ra chiến lược kinh doanh. | |
+
+#### 3.1.3. Mô tả bài toán và lên kế hoạch cho dự án
+##### 3.1.3.1. Mô tả về hệ thống cần xây dựng
+**a. Đánh giá ưu nhược điểm của việc quản lý truyền thống**
+- **Ưu điểm:** Chi phí thấp ban đầu, dễ triển khai, nhân viên quen thuộc với việc ghi chép.
+- **Nhược điểm:** Tốn thời gian & dễ sai sót khi nhập liệu, lên đơn chậm vào giờ cao điểm, khó kiểm soát trạng thái các bàn (bàn trống/bàn có khách), và báo cáo doanh thu cuối ngày mất nhiều thời gian tổng hợp.
+
+**b. Nhu cầu phát triển phần mềm quản lý thay thế**
+- Tối ưu hóa quy trình order tại bàn và takeaway.
+- Hỗ trợ đa dạng phương thức thanh toán như tiền mặt, mã QR Momo (dynamic QR) và Paypal để tiết kiệm thời gian.
+- Phân quyền & Bảo mật hệ thống giữa Quản lý và Nhân viên.
+- Báo cáo & Phân tích thông minh doanh thu, đơn hàng theo ngày/tháng/năm.
+
+**c. Phát biểu bài toán**
+Xây dựng một hệ thống website quản lý quán cafe THECOFFEE247 và tìm kiếm món ăn hot trend.
+- **Khách hàng:** Tìm kiếm thông tin sản phẩm, xem menu (cafe, đồ ăn hot trend), xem thông tin liên hệ.
+- **Nhân viên:** Tạo và quản lý đơn hàng cho khách tại quầy (dùng tại chỗ, mang về), thêm món, cập nhật số lượng, in hóa đơn, xử lý thanh toán (tiền mặt, Momo, Paypal).
+- **Quản lý:** Quản lý tài khoản, thêm/sửa/xóa thông tin sản phẩm/cấu hình/danh mục, quản lý bàn, theo dõi trạng thái, tạo khuyến mãi/voucher và xem báo cáo thống kê doanh thu.
+
+##### 3.1.3.2. Đề xuất chức năng cho hệ thống
+Hệ thống website quản lý THECOFFEE247 dự kiến có các chức năng sau:
+- **Chức năng 1:** Quản lý nhập xuất tài khoản (Đăng nhập, đăng xuất, đăng ký).
+- **Chức năng 2:** Quản lý người dùng (Quản lý tài khoản nhân viên/khách hàng).
+- **Chức năng 3:** Quản lý sản phẩm (Thêm/sửa/xóa đồ uống, món ăn).
+- **Chức năng 4:** Quản lý danh mục sản phẩm.
+- **Chức năng 5:** Quản lý bàn (Thêm/sửa/xóa bàn, theo dõi trạng thái bàn trống/có khách).
+- **Chức năng 6:** Quản lý đơn hàng (Tạo đơn, cập nhật trạng thái chế biến).
+- **Chức năng 7:** Quản lý thanh toán (Ghi nhận thanh toán tiền mặt, Momo, Paypal).
+- **Chức năng 8:** Quản lý khuyến mãi/Voucher.
+- **Chức năng 9:** Thống kê doanh thu (Theo ngày, tháng, năm).
+
+### 3.2. Sơ đồ Use Case (Tình huống sử dụng) {#sơ-đồ-use-case-tình-huống-sử-dụng .unnumbered}
+
+#### 3.2.1. Use Case Tổng quan {#use-case-tổng-quan .unnumbered}
 
 
         
@@ -181,9 +254,26 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 ####  {#section-1 .unnumbered}
 
-#### 3.1.2. Use Case Chi tiết - Xác thực & Tài khoản {#use-case-chi-tiết---xác-thực-tài-khoản .unnumbered}
+#### 3.2.2. Use Case Chi tiết - Xác thực & Tài khoản {#use-case-chi-tiết---xác-thực-tài-khoản .unnumbered}
 
 **UC01 -- Đăng nhập hệ thống**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Đăng nhập hệ thống" as UC01
+
+KH --> UC01
+NV --> UC01
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -230,6 +320,23 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC02 -- Đăng ký tài khoản**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Đăng ký tài khoản" as UC02
+
+KH --> UC02
+NV --> UC02
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -270,6 +377,25 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC03 -- Quên mật khẩu**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Quên mật khẩu" as UC03
+usecase "Xác thực OTP Email" as UC04
+
+KH --> UC03
+NV --> UC03
+UC03 .> UC04 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -313,6 +439,23 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC04 -- Xác thực OTP Email**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Xác thực OTP Email" as UC04
+
+KH --> UC04
+NV --> UC04
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -354,6 +497,28 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC05 -- Quản lý thông tin cá nhân**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+
+actor "Khách hàng" as KH
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Quản lý thông tin cá nhân" as UC05
+usecase "Đăng nhập hệ thống" as UC01
+usecase "Xác thực OTP Email" as UC04
+
+KH --> UC05
+NV --> UC05
+UC05 ..> UC01 : <<include>>
+UC05 ..> UC04 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -392,9 +557,26 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
                                       định dạng Việt Nam (10 số).
   -----------------------------------------------------------------------
 
-#### 3.1.3. Use Case Chi tiết - Vận hành Bán hàng {#use-case-chi-tiết---vận-hành-bán-hàng .unnumbered}
+#### 3.2.3. Use Case Chi tiết - Vận hành Bán hàng {#use-case-chi-tiết---vận-hành-bán-hàng .unnumbered}
 
 **UC06 -- Xem trạng thái Bàn**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Xem trạng thái Bàn" as UC06
+usecase "Đăng nhập hệ thống" as UC01
+
+NV --> UC06
+UC06 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -432,6 +614,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC07 -- Thêm Bàn**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Thêm Bàn" as UC07
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC07
+UC07 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -439,7 +635,7 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
   **Tên Use Case**                    Thêm Bàn
 
-  **Actor**                           Nhân viên, Quản lý
+  **Actor**                           Quản lý
 
   **Mô tả**                           Thêm bàn mới vào hệ thống
 
@@ -458,6 +654,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC08 -- Sửa Bàn**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Sửa Bàn" as UC08
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC08
+UC08 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -465,7 +675,7 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
   **Tên Use Case**                    Sửa Bàn
 
-  **Actor**                           Nhân viên, Quản lý
+  **Actor**                           Quản lý
 
   **Mô tả**                           Chỉnh sửa thông tin của bàn đã có
 
@@ -484,6 +694,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC09 -- Xóa Bàn**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Xóa Bàn" as UC09
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC09
+UC09 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -491,7 +715,7 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
   **Tên Use Case**                    Xóa Bàn
 
-  **Actor**                           Nhân viên, Quản lý
+  **Actor**                           Quản lý
 
   **Mô tả**                           Xóa bàn khỏi hệ thống
 
@@ -510,6 +734,25 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC10 -- Tạo đơn hàng cho khách**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Tạo đơn hàng cho khách" as UC10
+usecase "Xem và thêm/xóa món cho đơn của bàn" as UC11
+usecase "Đăng nhập hệ thống" as UC01
+
+NV --> UC10
+UC10 .> UC11 : <<include>>
+UC10 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -546,6 +789,25 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC11 -- Xem và thêm/xóa món cho đơn của bàn**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Xem và thêm/xóa món cho đơn của bàn" as UC11
+usecase "Xem trạng thái Bàn" as UC06
+usecase "Đăng nhập hệ thống" as UC01
+
+NV --> UC11
+UC11 .> UC06 : <<extend>>
+UC11 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -581,6 +843,25 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC12 -- Tạo hóa đơn cho khách**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Tạo hóa đơn cho khách" as UC12
+usecase "Chọn phương thức thanh toán" as UC13
+usecase "Đăng nhập hệ thống" as UC01
+
+NV --> UC12
+UC12 .> UC13 : <<include>>
+UC12 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -613,6 +894,25 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC13 -- Chọn phương thức thanh toán**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Chọn phương thức thanh toán" as UC13
+usecase "Đăng nhập hệ thống" as UC01
+
+KH --> UC13
+NV --> UC13
+UC13 ..> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -649,6 +949,25 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC14 -- Nhập Voucher của khách và áp dụng**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Nhập Voucher của khách và áp dụng" as UC14
+usecase "Đăng nhập hệ thống" as UC01
+
+KH --> UC14
+NV --> UC14
+UC14 ..> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -684,6 +1003,22 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC15 -- Nhập số điện thoại tích điểm**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Nhập số điện thoại tích điểm" as UC15
+usecase "Đăng nhập hệ thống" as UC01
+NV --> UC15
+UC15 ..> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -718,6 +1053,25 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC16 -- Xuất Hóa đơn**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Xuất Hóa đơn" as UC16
+usecase "Xem Lịch sử Hóa đơn" as UC17
+usecase "Đăng nhập hệ thống" as UC01
+
+NV --> UC16
+UC16 .> UC17 : <<extend>>
+UC16 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -748,6 +1102,25 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC17 -- Xem Lịch sử Hóa đơn**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+
+QL --|> NV
+
+usecase "Xem Lịch sử Hóa đơn" as UC17
+usecase "Xuất Hóa đơn" as UC16
+usecase "Đăng nhập hệ thống" as UC01
+
+NV --> UC17
+UC16 .> UC17 : <<extend>>
+UC17 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -782,9 +1155,23 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
                                       đơn.
   -----------------------------------------------------------------------
 
-#### 3.1.4. Use Case Chi tiết - Quản lý Hệ thống {#use-case-chi-tiết---quản-lý-hệ-thống .unnumbered}
+#### 3.2.4. Use Case Chi tiết - Quản lý Hệ thống {#use-case-chi-tiết---quản-lý-hệ-thống .unnumbered}
 
 **UC18 -- Thêm Voucher**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Thêm Voucher" as UC18
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC18
+UC18 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -811,6 +1198,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC19 -- Sửa Voucher**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Sửa Voucher" as UC19
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC19
+UC19 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -835,6 +1236,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC20 -- Xóa Voucher**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Xóa Voucher" as UC20
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC20
+UC20 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -862,6 +1277,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC21 -- Thêm Danh mục**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Thêm Danh mục" as UC21
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC21
+UC21 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -887,6 +1316,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC22 -- Sửa Danh mục**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Sửa Danh mục" as UC22
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC22
+UC22 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -911,6 +1354,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC23 -- Xóa Danh mục**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Xóa Danh mục" as UC23
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC23
+UC23 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -939,6 +1396,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC24 -- Thêm Món ăn**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Thêm Món ăn" as UC24
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC24
+UC24 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -963,6 +1434,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC25 -- Sửa Món ăn**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Sửa Món ăn" as UC25
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC25
+UC25 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -989,6 +1474,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC26 -- Xóa Món ăn**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Xóa Món ăn" as UC26
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC26
+UC26 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -1013,6 +1512,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC27 -- Thêm Người Dùng**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Thêm Người Dùng" as UC27
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC27
+UC27 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -1040,6 +1553,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC28 -- Sửa Người Dùng**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Sửa Người Dùng" as UC28
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC28
+UC28 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -1064,6 +1591,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC29 -- Vô hiệu hóa Người Dùng**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Vô hiệu hóa Người Dùng" as UC29
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC29
+UC29 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -1090,6 +1631,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC30 -- Quản lý Đơn hàng**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Quản lý Đơn hàng" as UC30
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC30
+UC30 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -1124,6 +1679,22 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC31 -- Xem Dashboard Thống kê**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Xem Dashboard Thống kê" as UC31
+usecase "Xem Doanh thu Chi tiết" as UC32
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC31
+UC32 .> UC31 : <<extend>>
+UC31 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -1157,6 +1728,22 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC32 -- Xem Doanh thu Chi tiết**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "Xem Doanh thu Chi tiết" as UC32
+usecase "Xem Dashboard Thống kê" as UC31
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC32
+UC32 .> UC31 : <<extend>>
+UC32 .> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -1193,6 +1780,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC33 -- AI Gợi ý Trend**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Quản lý" as QL
+
+usecase "AI Gợi ý Trend" as UC33
+usecase "Đăng nhập hệ thống" as UC01
+
+QL --> UC33
+UC33 .> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -1228,9 +1829,23 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
                                       database để xem lại lịch sử.
   -----------------------------------------------------------------------
 
-#### 3.1.5. Use Case Chi tiết - Khách hàng {#use-case-chi-tiết---khách-hàng .unnumbered}
+#### 3.2.5. Use Case Chi tiết - Khách hàng {#use-case-chi-tiết---khách-hàng .unnumbered}
 
 **UC34 -- Xem Thực đơn**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+
+usecase "Xem Thực đơn" as UC34
+usecase "Đăng nhập hệ thống" as UC01
+
+KH --> UC34
+UC34 ..> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -1265,6 +1880,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC35 -- Đổi Điểm lấy Voucher**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+
+usecase "Đổi Điểm lấy Voucher" as UC35
+usecase "Đăng nhập hệ thống" as UC01
+
+KH --> UC35
+UC35 ..> UC01 : <<include>>
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -1303,6 +1932,20 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC36 -- Quản lý Voucher Cá nhân**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+
+usecase "Quản lý Voucher Cá nhân" as UC36
+usecase "Đăng nhập hệ thống" as UC01
+
+KH --> UC36
+UC36 ..> UC01 : <<include>>
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -1337,6 +1980,18 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 **UC37 -- Gửi Đề xuất Món ăn**
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+
+usecase "Gửi Đề xuất Món ăn" as UC37
+
+KH --> UC37
+@enduml
+```
+
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
   ----------------------------------- -----------------------------------
@@ -1369,6 +2024,18 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
   -----------------------------------------------------------------------
 
 **UC38 -- Gửi Liên hệ**
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+left to right direction
+actor "Khách hàng" as KH
+
+usecase "Gửi Liên hệ" as UC38
+
+KH --> UC38
+@enduml
+```
 
   -----------------------------------------------------------------------
   Thuộc tính                          Nội dung
@@ -1407,15 +2074,222 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 
 ###    {#section-3 .unnumbered}
 
-### 3.2. Sơ đồ Lớp (Class Diagram) {#sơ-đồ-lớp-class-diagram .unnumbered}
+### 3.3. Sơ đồ Lớp (Class Diagram) {#sơ-đồ-lớp-class-diagram .unnumbered}
 
-![](media/media/image7.png){width="7.132638888888889in"
-height="4.480555555555555in"}
+![](media/media/image7.png){width="7.132638888888889in" height="4.480555555555555in"}
 
-3.3. Sơ đồ Tuần tự (Sequence Diagram) - Theo từng nhóm chức năng (API
-Integration)
+Dưới đây là sơ đồ lớp chi tiết bao gồm các thuộc tính và phương thức (dựa trên cấu trúc Entity thực tế của dự án):
 
-#### 3.3.1. Sơ đồ Tuần tự - Nhóm Xác thực (UC01 - UC04) {#sơ-đồ-tuần-tự-nhóm-xác-thực .unnumbered}
+```plantuml
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype orthogonal
+skinparam shadow false
+
+skinparam class {
+    BackgroundColor White
+    HeaderBackgroundColor #dae8fc
+    BorderColor #6c8ebf
+    FontColor Black
+    FontSize 12
+    AttributeFontSize 11
+    MethodFontSize 11
+}
+
+skinparam enum {
+    BackgroundColor White
+    HeaderBackgroundColor #fff2cc
+    BorderColor #d6b656
+    FontColor Black
+    FontSize 12
+    AttributeFontSize 11
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
+class Roles {
+  + id : Long
+  + name : String
+  + getId() : Long
+  + getName() : String
+  + setName(name : String) : void
+}
+
+class User {
+  + id : Long
+  + displayName : String
+  + username : String
+  + email : String
+  + phoneNumber : String
+  + rewardPoints : Integer
+  + provider : AuthProvider
+  + createdAt : LocalDateTime
+  + onCreate() : void
+  + getRewardPoints() : Integer
+  + setRewardPoints(points : Integer) : void
+}
+
+class FoodSuggestion {
+  + id : Long
+  + foodName : String
+  + description : String
+  + category : String
+  + votes : Integer
+  + createdAt : LocalDateTime
+  + preUpdate() : void
+  + getVotes() : Integer
+  + setVotes(votes : Integer) : void
+}
+
+class Voucher {
+  + id : Long
+  + code : String
+  + type : VoucherType
+  + discountValue : BigDecimal
+  + minOrderAmount : BigDecimal
+  + active : boolean
+  + requiredPoints : Integer
+  + isActive() : boolean
+  + getDiscountValue() : BigDecimal
+}
+
+class UserVoucher {
+  + id : Long
+  + code : String
+  + used : boolean
+  + expiryAt : LocalDateTime
+  + isUsed() : boolean
+  + setUsed(used : boolean) : void
+}
+
+class RestaurantTable {
+  + id : Long
+  + name : String
+  + available : boolean
+  + capacity : int
+  + isAvailable() : boolean
+  + setAvailable(available : boolean) : void
+  + getCapacity() : int
+}
+
+class MenuItem {
+  + id : Long
+  + name : String
+  + price : BigDecimal
+  + imageUrl : String
+  + description : String
+  + getPrice() : BigDecimal
+  + getName() : String
+}
+
+class Category {
+  + id : Long
+  + name : String
+  + getName() : String
+  + setName(name : String) : void
+}
+
+class OrderItem {
+  + id : Long
+  + quantity : int
+  + getQuantity() : int
+  + setQuantity(quantity : int) : void
+}
+
+class Order {
+  + id : Long
+  + orderTime : LocalDateTime
+  + status : OrderStatus
+  + orderType : OrderType
+  + getStatus() : OrderStatus
+  + setStatus(status : OrderStatus) : void
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  PAID
+  CANCELLED
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+}
+
+class Invoice {
+  + id : Long
+  + paymentTime : LocalDateTime
+  + originalAmount : BigDecimal
+  + discountAmount : BigDecimal
+  + totalAmount : BigDecimal
+  + paymentMethod : PaymentMethod
+  + status : InvoiceStatus
+  + getTotalAmount() : BigDecimal
+  + getStatus() : InvoiceStatus
+}
+
+enum PaymentMethod {
+  CASH
+  PAYPAL
+  CARD
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+class InstagramTrend {
+  + id : Long
+  + hashtag : String
+  + foodName : String
+  + engagementCount : Integer
+  + scrapedAt : LocalDateTime
+  + calculateInstagramScore() : void
+}
+
+class SerpApiTrend {
+  + id : Long
+  + keyword : String
+  + analysisResult : String
+  + trendDate : LocalDate
+  + createdAt : LocalDateTime
+  + calculateTrendScore() : void
+}
+
+' Relationships
+User "n" --> "n" Roles : user_roles
+FoodSuggestion "n" --> "1" User
+User "1" --> "n" UserVoucher
+User "1" --> "n" Order : staff
+User "1" --> "n" Invoice : cashier
+Voucher "1" --> "n" UserVoucher
+UserVoucher "0..1" --> "1" Invoice : applied_voucher
+Order "1" --> "1" Invoice
+RestaurantTable "1" --> "n" Order
+Order "1" --> "n" OrderItem
+OrderItem "n" --> "1" MenuItem
+MenuItem "n" --> "1" Category
+
+' Dependencies to Enums (dotted)
+User ..> AuthProvider
+Order ..> OrderStatus
+Order ..> OrderType
+Invoice ..> PaymentMethod
+Invoice ..> InvoiceStatus
+
+@enduml
+```
+
+### 3.4. Sơ đồ Tuần tự (Sequence Diagram) - Theo từng nhóm chức năng (API Integration) {#sơ-đồ-tuần-tự-sequence-diagram .unnumbered}
+
+#### 3.4.1. Sơ đồ Tuần tự - Nhóm Xác thực (UC01 - UC04) {#sơ-đồ-tuần-tự-nhóm-xác-thực .unnumbered}
 
 **Sơ đồ Tuần tự UC02 - Đăng ký tài khoản**
 
@@ -1547,7 +2421,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.2. Sơ đồ Tuần tự - Nhóm Quản lý Thực đơn (UC24 - UC26) {#sơ-đồ-tuần-tự-nhóm-quản-lý-thực-đơn .unnumbered}
+#### 3.4.2. Sơ đồ Tuần tự - Nhóm Quản lý Thực đơn (UC24 - UC26) {#sơ-đồ-tuần-tự-nhóm-quản-lý-thực-đơn .unnumbered}
 
 **Sơ đồ Tuần tự UC24 - Thêm Món ăn**
 
@@ -1619,7 +2493,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.3. Sơ đồ Tuần tự - Nhóm Bán hàng & Đơn hàng (UC10 - UC11) {#sơ-đồ-tuần-tự-nhóm-bán-hàng .unnumbered}
+#### 3.4.3. Sơ đồ Tuần tự - Nhóm Bán hàng & Đơn hàng (UC10 - UC11) {#sơ-đồ-tuần-tự-nhóm-bán-hàng .unnumbered}
 
 **Sơ đồ Tuần tự UC10 - Tạo đơn hàng cho khách**
 
@@ -1664,7 +2538,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.4. Sơ đồ Tuần tự - Nhóm Thanh toán & Hóa đơn (UC12, UC13, UC16) {#sơ-đồ-tuần-tự-nhóm-thanh-toán .unnumbered}
+#### 3.4.4. Sơ đồ Tuần tự - Nhóm Thanh toán & Hóa đơn (UC12, UC13, UC16) {#sơ-đồ-tuần-tự-nhóm-thanh-toán .unnumbered}
 
 **Sơ đồ Tuần tự UC12 - Tạo hóa đơn**
 
@@ -1731,7 +2605,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.5. Sơ đồ Tuần tự - Nhóm Thống kê & Dashboard (UC31 - UC32) {#sơ-đồ-tuần-tự-nhóm-thống-kê .unnumbered}
+#### 3.4.5. Sơ đồ Tuần tự - Nhóm Thống kê & Dashboard (UC31 - UC32) {#sơ-đồ-tuần-tự-nhóm-thống-kê .unnumbered}
 
 **Sơ đồ Tuần tự UC31 - Xem Dashboard Thống kê**
 
@@ -1772,7 +2646,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.6. Sơ đồ Tuần tự - Nhóm AI Gợi ý Trend (UC33) {#sơ-đồ-tuần-tự-nhóm-ai-gợi-ý .unnumbered}
+#### 3.4.6. Sơ đồ Tuần tự - Nhóm AI Gợi ý Trend (UC33) {#sơ-đồ-tuần-tự-nhóm-ai-gợi-ý .unnumbered}
 
 **Sơ đồ Tuần tự UC33 - AI Phân tích & Gợi ý Trend**
 
@@ -1803,7 +2677,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.7. Sơ đồ Tuần tự - Nhóm Quản lý Bàn (UC06 - UC09) {#sơ-đồ-tuần-tự-nhóm-quản-lý-bàn .unnumbered}
+#### 3.4.7. Sơ đồ Tuần tự - Nhóm Quản lý Bàn (UC06 - UC09) {#sơ-đồ-tuần-tự-nhóm-quản-lý-bàn .unnumbered}
 
 **Sơ đồ Tuần tự UC06 - Xem trạng thái Bàn**
 
@@ -1892,7 +2766,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.8. Sơ đồ Tuần tự - Nhóm Quản lý Danh mục (UC21 - UC23) {#sơ-đồ-tuần-tự-nhóm-quản-lý-danh-mục .unnumbered}
+#### 3.4.8. Sơ đồ Tuần tự - Nhóm Quản lý Danh mục (UC21 - UC23) {#sơ-đồ-tuần-tự-nhóm-quản-lý-danh-mục .unnumbered}
 
 **Sơ đồ Tuần tự UC21 - Thêm Danh mục**
 
@@ -1964,7 +2838,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.9. Sơ đồ Tuần tự - Nhóm Khách hàng & Tương tác (UC05, UC35) {#sơ-đồ-tuần-tự-nhóm-khách-hàng .unnumbered}
+#### 3.4.9. Sơ đồ Tuần tự - Nhóm Khách hàng & Tương tác (UC05, UC35) {#sơ-đồ-tuần-tự-nhóm-khách-hàng .unnumbered}
 
 **Sơ đồ Tuần tự UC35 - Đổi Điểm lấy Voucher (Quản lý Voucher Cá nhân UC36)**
 
@@ -2000,7 +2874,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.10. Sơ đồ Tuần tự - Lịch sử Hóa đơn (UC17) {#sơ-đồ-tuần-tự-lịch-sử-hóa-đơn .unnumbered}
+#### 3.4.10. Sơ đồ Tuần tự - Lịch sử Hóa đơn (UC17) {#sơ-đồ-tuần-tự-lịch-sử-hóa-đơn .unnumbered}
 
 **Sơ đồ Tuần tự UC17 - Xem & Lọc Lịch sử Hóa đơn**
 
@@ -2029,7 +2903,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.11. Sơ đồ Tuần tự - Nhóm Quản lý Voucher (UC18 - UC20) {#sơ-đồ-tuần-tự-nhóm-quản-lý-voucher .unnumbered}
+#### 3.4.11. Sơ đồ Tuần tự - Nhóm Quản lý Voucher (UC18 - UC20) {#sơ-đồ-tuần-tự-nhóm-quản-lý-voucher .unnumbered}
 
 **Sơ đồ Tuần tự UC18 - Thêm Voucher**
 
@@ -2101,7 +2975,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.12. Sơ đồ Tuần tự - Nhóm Quản lý Người dùng (UC27 - UC29) {#sơ-đồ-tuần-tự-nhóm-quản-lý-người-dùng .unnumbered}
+#### 3.4.12. Sơ đồ Tuần tự - Nhóm Quản lý Người dùng (UC27 - UC29) {#sơ-đồ-tuần-tự-nhóm-quản-lý-người-dùng .unnumbered}
 
 **Sơ đồ Tuần tự UC27 - Thêm Người dùng (Staff)**
 
@@ -2166,7 +3040,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.13. Chức năng Thanh toán bằng Thẻ ngân hàng (Card) {#chức-năng-thanh-toán-bằng-thẻ-ngân-hàng-card .unnumbered}
+#### 3.4.13. Chức năng Thanh toán bằng Thẻ ngân hàng (Card) {#chức-năng-thanh-toán-bằng-thẻ-ngân-hàng-card .unnumbered}
 
 -   **API:** `/api/invoices/create-with-card-payment`
 
@@ -2202,7 +3076,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.13b. Chức năng Thanh toán MoMo (QR & Link) {#b.-chức-năng-thanh-toán-momo-qr-link .unnumbered}
+#### 3.4.13b. Chức năng Thanh toán MoMo (QR & Link) {#b.-chức-năng-thanh-toán-momo-qr-link .unnumbered}
 
 -   **API:** `POST /{orderId}/momo-link`, `POST /webhook/momo`,
     `GET /return/momo`
@@ -2242,7 +3116,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.14. Chức năng Theo dõi Trạng thái Đơn hàng Realtime (SSE) {#chức-năng-theo-dõi-trạng-thái-đơn-hàng-realtime-sse .unnumbered}
+#### 3.4.14. Chức năng Theo dõi Trạng thái Đơn hàng Realtime (SSE) {#chức-năng-theo-dõi-trạng-thái-đơn-hàng-realtime-sse .unnumbered}
 
 -   **API:** `/api/invoices/sse/order/{id}`
 
@@ -2276,7 +3150,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.15. Chức năng Cập nhật Hồ sơ Cá nhân (OTP) {#chức-năng-cập-nhật-hồ-sơ-cá-nhân-otp .unnumbered}
+#### 3.4.15. Chức năng Cập nhật Hồ sơ Cá nhân (OTP) {#chức-năng-cập-nhật-hồ-sơ-cá-nhân-otp .unnumbered}
 
 -   **API:** `/api/users/me`, `/api/users/me/otp/send`,
     `/api/users/me/otp/verify-update`
@@ -2315,7 +3189,7 @@ Integration)
     @enduml
     ```
 
-#### 3.3.16. Chức năng Xem Doanh thu Chi tiết {#chức-năng-xem-doanh-thu-chi-tiết .unnumbered}
+#### 3.4.16. Chức năng Xem Doanh thu Chi tiết {#chức-năng-xem-doanh-thu-chi-tiết .unnumbered}
 
 -   **API:** `/api/revenues/daily`, `/api/revenues/date/{date}`,
     `/api/revenues/payment-method/counts`
@@ -2348,19 +3222,26 @@ Integration)
     @enduml
     ```
 
-### 3.4. Sơ đồ Hoạt động (Activity Diagram) các nghiệp vụ {#sơ-đồ-hoạt-động-activity-diagram-các-nghiệp-vụ .unnumbered}
+### 3.5. Sơ đồ Hoạt động (Activity Diagram) các nghiệp vụ {#sơ-đồ-hoạt-động-activity-diagram-các-nghiệp-vụ .unnumbered}
 
-#### 3.4.1. Sơ đồ Hoạt động Đăng nhập nội bộ (Local Login)
+#### 3.5.1. Sơ đồ Hoạt động Đăng nhập nội bộ (Local Login)
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Người dùng|
     start
     :Truy cập trang Đăng nhập;
+    |Hệ thống|
+    :Hiển thị form đăng nhập;
+    |Người dùng|
     :Nhập Email & Mật khẩu;
+    |Hệ thống|
     while (Thông tin hợp lệ?) is (Không)
       :Báo lỗi đăng nhập;
+      |Người dùng|
       :Nhập Email & Mật khẩu;
+      |Hệ thống|
     endwhile (Có)
     :Hệ thống sinh JWT Token;
     :Lưu Token vào Storage;
@@ -2369,17 +3250,21 @@ Integration)
     @enduml
     ```
 
-#### 3.4.2. Sơ đồ Hoạt động Đăng ký tài khoản mới
+#### 3.5.2. Sơ đồ Hoạt động Đăng ký tài khoản mới
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Người dùng|
     start
     :Truy cập trang Đăng ký;
     :Điền Form (Tên, Email, Mật khẩu);
+    |Hệ thống|
     while (Dữ liệu hợp lệ & Email chưa tồn tại?) is (Không)
       :Báo lỗi trùng Email hoặc sai định dạng;
+      |Người dùng|
       :Điền Form (Tên, Email, Mật khẩu);
+      |Hệ thống|
     endwhile (Có)
     :Tạo bản ghi User mới (provider=LOCAL);
     :Lưu thông tin vào Database;
@@ -2389,21 +3274,26 @@ Integration)
     @enduml
     ```
 
-#### 3.4.3. Sơ đồ Hoạt động Đăng nhập Google OAuth2
+#### 3.5.3. Sơ đồ Hoạt động Đăng nhập Google OAuth2
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Người dùng|
     start
     :Truy cập trang Đăng nhập;
     :Chọn "Đăng nhập bằng Google";
+    |Hệ thống|
     :Chuyển hướng đến cổng xác thực Google OAuth2;
+    |Người dùng|
     :Google hiển thị màn hình cấp quyền;
     if (Người dùng đồng ý?) then (Không)
       :Hủy thao tác;
+      |Hệ thống|
       :Quay lại trang Đăng nhập;
       stop
     else (Có)
+      |Hệ thống|
       :Google trả về Authorization Code;
       :Backend đổi Code lấy Access Token từ Google;
       :Lấy thông tin Profile (Email, Tên, Avatar);
@@ -2419,26 +3309,34 @@ Integration)
     @enduml
     ```
 
-#### 3.4.4. Sơ đồ Hoạt động Quên mật khẩu & Khôi phục qua OTP
+#### 3.5.4. Sơ đồ Hoạt động Quên mật khẩu & Khôi phục qua OTP
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Người dùng|
     start
     :Truy cập trang Quên mật khẩu;
     :Nhập Email yêu cầu khôi phục mật khẩu;
+    |Hệ thống|
     while (Email tồn tại trong hệ thống?) is (Không)
       :Báo lỗi Email không tồn tại;
+      |Người dùng|
       :Nhập Email yêu cầu khôi phục mật khẩu;
+      |Hệ thống|
     endwhile (Có)
     :Sinh mã OTP ngẫu nhiên (hiệu lực 5 phút);
     :Lưu OTP vào Database;
     :Gửi mã OTP qua Email cho người dùng;
     :Chuyển đến màn hình nhập OTP;
+    |Người dùng|
     :Người dùng nhập mã OTP và Mật khẩu mới;
+    |Hệ thống|
     while (Mã OTP hợp lệ và chưa hết hạn?) is (Không)
       :Báo lỗi OTP sai hoặc đã hết hạn;
+      |Người dùng|
       :Người dùng nhập mã OTP và Mật khẩu mới;
+      |Hệ thống|
     endwhile (Có)
     :Cập nhật mật khẩu mới (Mã hóa Hash);
     :Vô hiệu hóa mã OTP hiện tại;
@@ -2448,21 +3346,27 @@ Integration)
     @enduml
     ```
 
-#### 3.4.5. Sơ đồ Hoạt động Cập nhật Hồ sơ cá nhân (OTP)
+#### 3.5.5. Sơ đồ Hoạt động Cập nhật Hồ sơ cá nhân (OTP)
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Người dùng|
     start
     :Đăng nhập và truy cập trang Hồ sơ cá nhân;
     :Chỉnh sửa thông tin (Tên, Số điện thoại);
     :Nhấn nút Lưu thay đổi;
+    |Hệ thống|
     :Hệ thống tạo và gửi mã OTP xác nhận về Email;
     :Hiển thị Popup yêu cầu nhập OTP;
+    |Người dùng|
     :Người dùng kiểm tra Email và nhập mã OTP;
+    |Hệ thống|
     while (Mã OTP hợp lệ?) is (Không)
       :Báo lỗi xác thực sai OTP;
+      |Người dùng|
       :Người dùng kiểm tra Email và nhập mã OTP;
+      |Hệ thống|
     endwhile (Có)
     :Lưu thông tin cập nhật vào Database;
     :Thông báo cập nhật hồ sơ thành công;
@@ -2470,18 +3374,22 @@ Integration)
     @enduml
     ```
 
-#### 3.4.6. Sơ đồ Hoạt động Thêm / Sửa Người dùng
+#### 3.5.6. Sơ đồ Hoạt động Thêm / Sửa Người dùng
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Quản lý|
     start
     :Truy cập Quản lý Tài khoản (Dành cho Quản lý);
     :Chọn chức năng Thêm hoặc Sửa Người dùng;
     :Nhập thông tin (Email, Tên, Chức vụ/Role);
+    |Hệ thống|
     while (Dữ liệu hợp lệ & Không trùng Email?) is (Không)
       :Báo lỗi Email đã tồn tại hoặc thiếu dữ liệu;
+      |Quản lý|
       :Nhập thông tin (Email, Tên, Chức vụ/Role);
+      |Hệ thống|
     endwhile (Có)
     :Hệ thống kiểm tra Role hợp lệ;
     :Lưu/Cập nhật tài khoản Người dùng vào Database;
@@ -2491,19 +3399,23 @@ Integration)
     @enduml
     ```
 
-#### 3.4.7. Sơ đồ Hoạt động Vô hiệu hóa (Khóa) Người dùng
+#### 3.5.7. Sơ đồ Hoạt động Vô hiệu hóa (Khóa) Người dùng
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Quản lý|
     start
     :Truy cập Quản lý Tài khoản;
     :Chọn tài khoản Người dùng cần khóa;
     :Nhấn nút "Vô hiệu hóa";
+    |Hệ thống|
     :Hiển thị cảnh báo xác nhận khóa tài khoản;
+    |Quản lý|
     if (Quản lý xác nhận?) then (Không)
       :Hủy, không thay đổi gì;
     else (Có)
+      |Hệ thống|
       :Cập nhật trạng thái User thành INACTIVE;
       :Thông báo vô hiệu hóa thành công;
       :Cập nhật lại danh sách hiển thị;
@@ -2512,18 +3424,22 @@ Integration)
     @enduml
     ```
 
-#### 3.4.8. Sơ đồ Hoạt động Thêm / Sửa Danh mục
+#### 3.5.8. Sơ đồ Hoạt động Thêm / Sửa Danh mục
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên/Quản lý|
     start
     :Truy cập Quản lý Danh mục;
     :Chọn chức năng Thêm mới hoặc Sửa;
     :Nhập thông tin Tên Danh mục;
+    |Hệ thống|
     while (Tên hợp lệ & Không trùng lặp?) is (Không)
       :Báo lỗi dữ liệu không hợp lệ (Validation Error);
+      |Nhân viên/Quản lý|
       :Nhập thông tin Tên Danh mục;
+      |Hệ thống|
     endwhile (Có)
     :Lưu hoặc Cập nhật Danh mục vào Database;
     :Thông báo thành công;
@@ -2532,14 +3448,16 @@ Integration)
     @enduml
     ```
 
-#### 3.4.9. Sơ đồ Hoạt động Xóa Danh mục
+#### 3.5.9. Sơ đồ Hoạt động Xóa Danh mục
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên/Quản lý|
     start
     :Truy cập Quản lý Danh mục;
     :Chọn Danh mục cần xóa và nhấn Xóa;
+    |Hệ thống|
     :Hệ thống kiểm tra ràng buộc dữ liệu;
     if (Có Món ăn nào đang thuộc Danh mục này không?) then (Có)
       :Báo lỗi khóa ngoại (Foreign Key Constraint);
@@ -2553,20 +3471,26 @@ Integration)
     @enduml
     ```
 
-#### 3.4.10. Sơ đồ Hoạt động Thêm / Sửa Món ăn
+#### 3.5.10. Sơ đồ Hoạt động Thêm / Sửa Món ăn
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên/Quản lý|
     start
     :Truy cập Quản lý Thực đơn;
     :Chọn Thêm mới hoặc Sửa Món ăn;
     :Nhập thông tin (Tên, Giá, Ảnh, Danh mục);
+    |Hệ thống|
     while (Giá > 0 & Đầy đủ thông tin bắt buộc?) is (Không)
       :Hiển thị cảnh báo điền thiếu/sai định dạng;
+      |Nhân viên/Quản lý|
       :Nhập thông tin (Tên, Giá, Ảnh, Danh mục);
+      |Hệ thống|
     endwhile (Có)
+    |Nhân viên/Quản lý|
     :Upload ảnh (nếu có);
+    |Hệ thống|
     :Lưu/Cập nhật bản ghi Món ăn vào Database;
     :Thông báo lưu thành công;
     :Hiển thị danh sách cập nhật;
@@ -2574,14 +3498,16 @@ Integration)
     @enduml
     ```
 
-#### 3.4.11. Sơ đồ Hoạt động Xóa Món ăn
+#### 3.5.11. Sơ đồ Hoạt động Xóa Món ăn
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên/Quản lý|
     start
     :Truy cập Quản lý Thực đơn;
     :Chọn Món ăn cần xóa;
+    |Hệ thống|
     :Hệ thống kiểm tra ràng buộc;
     if (Món ăn đang có trong Đơn hàng chưa thanh toán?) then (Có)
       :Báo lỗi không thể xóa món đang phục vụ;
@@ -2595,18 +3521,22 @@ Integration)
     @enduml
     ```
 
-#### 3.4.12. Sơ đồ Hoạt động Thêm / Sửa Bàn phục vụ
+#### 3.5.12. Sơ đồ Hoạt động Thêm / Sửa Bàn phục vụ
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên/Quản lý|
     start
     :Truy cập Quản lý Bàn phục vụ;
     :Chọn Thêm hoặc Sửa thông tin Bàn;
     :Nhập Tên Bàn / Vị trí;
+    |Hệ thống|
     while (Tên bàn hợp lệ & Không trùng lặp?) is (Không)
       :Báo lỗi trùng tên bàn;
+      |Nhân viên/Quản lý|
       :Nhập Tên Bàn / Vị trí;
+      |Hệ thống|
     endwhile (Có)
     :Lưu thông tin Bàn mới/Cập nhật vào Database;
     :Thông báo thao tác thành công;
@@ -2615,14 +3545,16 @@ Integration)
     @enduml
     ```
 
-#### 3.4.13. Sơ đồ Hoạt động Xóa Bàn phục vụ
+#### 3.5.13. Sơ đồ Hoạt động Xóa Bàn phục vụ
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên/Quản lý|
     start
     :Truy cập Quản lý Bàn phục vụ;
     :Chọn Bàn cần xóa và nhấn Xóa;
+    |Hệ thống|
     :Hệ thống truy xuất trạng thái hiện tại của Bàn;
     if (Trạng thái Bàn?) then (OCCUPIED - Đang có khách)
       :Báo lỗi không thể xóa bàn đang có Đơn hàng;
@@ -2636,18 +3568,22 @@ Integration)
     @enduml
     ```
 
-#### 3.4.14. Sơ đồ Hoạt động Thêm / Sửa Voucher
+#### 3.5.14. Sơ đồ Hoạt động Thêm / Sửa Voucher
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên/Quản lý|
     start
     :Truy cập Quản lý Voucher;
     :Chọn chức năng Thêm hoặc Sửa;
     :Nhập Mã (Code), Giá trị giảm, Điều kiện, Hạn sử dụng;
+    |Hệ thống|
     while (Mã Voucher hợp lệ & Không trùng lặp?) is (Không)
       :Báo lỗi Validation (Mã đã tồn tại);
+      |Nhân viên/Quản lý|
       :Nhập Mã (Code), Giá trị giảm, Điều kiện, Hạn sử dụng;
+      |Hệ thống|
     endwhile (Có)
     :Lưu thông tin Voucher vào Database;
     :Thông báo lưu thành công;
@@ -2656,14 +3592,16 @@ Integration)
     @enduml
     ```
 
-#### 3.4.15. Sơ đồ Hoạt động Xóa Voucher
+#### 3.5.15. Sơ đồ Hoạt động Xóa Voucher
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên/Quản lý|
     start
     :Truy cập Quản lý Voucher;
     :Chọn Voucher cần xóa;
+    |Hệ thống|
     :Hệ thống kiểm tra dữ liệu liên quan;
     if (Voucher này đã có khách hàng đổi / sở hữu chưa?) then (Có)
       :Báo lỗi khóa ngoại (Đã có UserVoucher);
@@ -2677,108 +3615,140 @@ Integration)
     @enduml
     ```
 
-#### 3.4.16. Sơ đồ Hoạt động Tạo Đơn hàng & Gọi món (POS)
+#### 3.5.16. Sơ đồ Hoạt động Tạo Đơn hàng & Gọi món (POS)
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên|
     start
     :Nhân viên mở giao diện Bán hàng (POS);
     if (Loại đơn hàng?) then (Dùng tại bàn)
       :Nhân viên chọn Bàn trống (AVAILABLE);
+      |Hệ thống|
       :Hệ thống tạo Order (Gắn TableId);
       :Đổi trạng thái bàn thành OCCUPIED;
     else (Mua mang đi / Takeaway)
+      |Hệ thống|
       :Hệ thống tạo Order (Loại TAKEAWAY);
     endif
+    |Nhân viên|
     :Nhân viên chọn món ăn từ Menu;
     :Nhập số lượng;
+    |Hệ thống|
     :Hệ thống thêm OrderItem và tính tạm tính;
     while (Khách muốn gọi thêm món?) is (Có)
+      |Nhân viên|
       :Nhân viên chọn món ăn từ Menu;
       :Nhập số lượng;
+      |Hệ thống|
       :Hệ thống thêm OrderItem và tính tạm tính;
     endwhile (Không)
+    |Nhân viên|
     :Xác nhận hoàn tất gọi món;
+    |Hệ thống|
     :Đơn hàng chuyển sang chờ chế biến (PENDING);
     stop
     @enduml
     ```
 
-#### 3.4.17. Sơ đồ Hoạt động Thanh toán Hóa đơn
+#### 3.5.17. Sơ đồ Hoạt động Thanh toán Hóa đơn
+
+    ```plantuml
+@startuml
+|Nhân viên|
+start
+:Mở giao diện Chi tiết đơn hàng;
+|Hệ thống|
+:Hệ thống tính tổng tiền Đơn hàng;
+|Nhân viên|
+if (Nhập Voucher của khách?) then (Có)
+  :Trừ tiền theo cấu hình Voucher;
+endif
+if (Nhập sdt khách để tích điểm?) then (Có)
+  :Nhập số điện thoại khách hàng;
+endif
+
+while (Trạng thái đơn hàng là PAID?) is (Không)
+  |Nhân viên|
+  :Chọn phương thức thanh toán;
+  |Hệ thống|
+  switch (Phương thức thanh toán?)
+  case (Tiền mặt)
+    :Tạo Invoice trạng thái PAID và cập nhật Order thành PAID;
+    :Xuất Hóa đơn in cho khách;
+  case (QR động MoMo)
+    :Tạo Invoice trạng thái PENDING;
+    :Sinh mã QR động MoMo;
+    :Chờ Webhook xác nhận từ MoMo;
+    if (Webhook trả về thành công?) then (Có)
+      :Cập nhật Invoice và Order thành PAID;
+      :Xuất Hóa đơn điện tử cho khách;
+    else (Thất bại)
+      :Cập nhật Invoice thành CANCELED;
+      :Báo lỗi thanh toán;
+    endif
+  case (Thẻ Ngân hàng - Paypal)
+    :Tạo Invoice trạng thái PENDING;
+    :Xử lý giao dịch qua cổng Paypal;
+    :Chờ Webhook xác nhận từ Paypal;
+    if (Webhook trả về thành công?) then (Có)
+      :Cập nhật Invoice và Order thành PAID;
+      :Xuất Hóa đơn điện tử cho khách;
+    else (Thất bại)
+      :Cập nhật Invoice thành CANCELED;
+      :Báo lỗi thanh toán;
+    endif
+  endswitch
+  |Nhân viên|
+endwhile (Có)
+
+|Hệ thống|
+:Giải phóng Bàn (AVAILABLE);
+:Hoàn tất quy trình bán hàng;
+stop
+@enduml
+    ```
+
+#### 3.5.18. Sơ đồ Hoạt động xem chi tiết đơn hàng
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Nhân viên|
     start
-    :Hệ thống tính tổng tiền Đơn hàng;
-    if (Áp dụng Voucher?) then (Có)
-      :Trừ tiền theo cấu hình Voucher;
+    :Nhấn chọn xem Chi tiết Đơn hàng;
+    |Hệ thống|
+    :Tiếp nhận ID Đơn hàng;
+    :Truy vấn thông tin Đơn hàng và Danh sách món ăn từ Database;
+    if (Đơn hàng tồn tại?) then (Không)
+      :Phản hồi lỗi không tìm thấy đơn hàng;
+      |Nhân viên|
+      :Hiển thị thông báo lỗi lên màn hình;
+    else (Có)
+      |Hệ thống|
+      :Trả về dữ liệu chi tiết Đơn hàng;
+      |Nhân viên|
+      :Hiển thị đầy đủ thông tin Đơn hàng lên giao diện;
     endif
-    :Khách hàng chọn phương thức thanh toán;
-    if (Phương thức là Tiền mặt?) then (Có)
-      :Nhân viên nhận tiền mặt;
-      :Hệ thống tạo Invoice và đổi trạng thái Order thành PAID;
-      :Xuất Hóa đơn in cho khách;
-    elseif (Phương thức là QR MoMo?) then (Có)
-      :Hệ thống gọi API MoMo tạo mã QR;
-      :Khách hàng dùng App MoMo quét QR và thanh toán;
-      if (MoMo gửi Webhook xác nhận thành công?) then (Có)
-        :Xác thực chữ ký HMAC;
-        :Cập nhật trạng thái PAID tự động;
-      else (Lỗi/Timeout)
-        :Thông báo giao dịch thất bại;
-      endif
-    else (Thẻ Ngân Hàng / Paypal)
-      :Hệ thống chuyển hướng tới Cổng thanh toán Thẻ;
-      :Khách hàng nhập thông tin thẻ & OTP ngân hàng;
-      if (Giao dịch thành công?) then (Có)
-        :Cập nhật trạng thái PAID tự động;
-      else (Thất bại)
-        :Báo lỗi thanh toán;
-      endif
-    endif
-    while (Trạng thái đơn hàng là PAID?) is (Không)
-      :Yêu cầu thanh toán lại;
-      :Khách hàng chọn lại phương thức thanh toán;
-    endwhile (Có)
-    :Giải phóng Bàn (AVAILABLE);
-    :Hoàn tất quy trình bán hàng;
     stop
     @enduml
     ```
 
-#### 3.4.18. Sơ đồ Hoạt động Xử lý Trạng thái Đơn hàng (Kitchen & SSE)
+#### 3.5.19. Sơ đồ Hoạt động Đổi Điểm lấy Voucher
 
     ```plantuml
-    @startuml
+ @startuml
     skinparam conditionStyle InsideDiamond
+    |Khách hàng|
     start
-    :Nhân viên Nhà bếp xem màn hình Quản lý Đơn;
-    :Nhận Đơn hàng mới (Trạng thái PENDING);
-    :Nhà bếp bấm "Bắt đầu chế biến";
-    :Cập nhật trạng thái Order thành PREPARING;
-    :Hệ thống phát sự kiện SSE (Server-Sent Events) tới Frontend;
-    :Giao diện POS tự động cập nhật "Đang chế biến";
-    :Nhà bếp chế biến xong và giao món;
-    :Thu ngân tiến hành thanh toán;
-    :Trạng thái Order chuyển thành PAID;
-    :Hệ thống phát sự kiện SSE hoàn tất;
-    :Đóng kết nối SSE cho đơn hàng này;
-    stop
-    @enduml
-    ```
-
-#### 3.4.19. Sơ đồ Hoạt động Đổi Điểm lấy Voucher
-
-    ```plantuml
-    @startuml
-    skinparam conditionStyle InsideDiamond
-    start
-    :Khách hàng/Nhân viên truy cập mục Đổi Điểm Thưởng;
+    :Khách hàng truy cập mục Đổi Điểm Thưởng;
+    |Hệ thống|
     :Hệ thống truy vấn Reward Points của User hiện tại;
     :Hiển thị điểm tích lũy và danh sách Voucher khả dụng;
+    |Khách hàng|
     :Người dùng chọn Voucher muốn đổi;
+    |Hệ thống|
     if (Điểm tích lũy >= Điểm yêu cầu?) then (Không)
       :Báo lỗi không đủ điểm để đổi;
     else (Có)
@@ -2791,16 +3761,20 @@ Integration)
     @enduml
     ```
 
-#### 3.4.20. Sơ đồ Hoạt động Lọc Lịch sử Hóa đơn
+#### 3.5.20. Sơ đồ Hoạt động Lọc Lịch sử Hóa đơn
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Người dùng|
     start
     :Truy cập trang Lịch sử Hóa đơn;
+    |Hệ thống|
     :Hệ thống tải danh sách Invoice mặc định;
+    |Người dùng|
     if (Áp dụng bộ lọc?) then (Có)
       :Nhập điều kiện (Từ ngày, Đến ngày, Trạng thái, Phương thức);
+      |Hệ thống|
       :Gửi yêu cầu lọc tới Server;
       :Server Query Database theo tham số;
       if (Có dữ liệu khớp?) then (Không)
@@ -2809,68 +3783,61 @@ Integration)
         :Cập nhật bảng danh sách hóa đơn;
       endif
     endif
+    |Người dùng|
     :Người dùng có thể chọn Xem chi tiết Hóa đơn;
+    |Hệ thống|
     :Hiển thị thông tin món ăn và thanh toán chi tiết;
     stop
     @enduml
     ```
 
-#### 3.4.21. Sơ đồ Hoạt động Xem Dashboard & Báo cáo Doanh thu
+#### 3.5.21. Sơ đồ Hoạt động Xem Dashboard & Báo cáo Doanh thu
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Quản lý|
     start
     :Quản lý truy cập Dashboard Thống kê;
     :Gửi tham số Tháng/Năm hiện tại;
-    fork
-      :Query Tổng doanh thu & Số đơn hàng;
-    fork again
-      :Query Doanh thu từng ngày (Bar Chart);
-    fork again
-      :Query Tỷ trọng Phương thức thanh toán (Pie Chart);
-    fork again
-      :Query Top Món ăn bán chạy nhất;
-    end fork
+    |Hệ thống|
+      :Query Tổng doanh thu & Số đơn hàng,Doanh thu từng ngày,Tỷ trọng Phương thức,Top Món ăn bán chạy nhất thanh toán ;  
     :Tổng hợp dữ liệu đa chiều;
     :Phản hồi dữ liệu JSON về Frontend;
-    :Frontend sử dụng thư viện Chart vẽ các biểu đồ;
+    |Quản lý|
     :Quản lý có thể tương tác lọc theo tháng/năm khác;
     stop
     @enduml
     ```
 
-#### 3.4.22. Sơ đồ Hoạt động AI Phân tích Món ăn Hot Trend
+#### 3.5.22. Sơ đồ Hoạt động AI Phân tích Món ăn Hot Trend
 
     ```plantuml
     @startuml
     skinparam conditionStyle InsideDiamond
+    |Quản lý|
     start
     :Truy cập chức năng Phân tích Xu hướng (Hot Trends);
     :Chọn nguồn cấp dữ liệu (SerpAPI hoặc Instagram);
+    |Hệ thống|
     :Hệ thống thu thập hàng loạt dữ liệu thô (Hashtags, Search Queries);
     :Gửi khối dữ liệu tới Llama AI thông qua Prompt được thiết kế sẵn;
     if (AI kết nối thành công & Phân tích xong?) then (Không)
-      :Báo lỗi Timeout hoặc Service Unavailable;
+      :Trả về thông báo lỗi (Timeout / Service Unavailable);
     else (Có)
       :Llama AI trả về danh sách các Món ăn Trend kèm lý do;
       :Lưu kết quả phân tích vào Database (Lịch sử Trend);
-      :Hiển thị danh sách gợi ý trên màn hình;
-      if (Quản lý muốn đưa món ăn vào Thực đơn?) then (Có)
-        :Nhấn nút "Tạo món ăn từ Trend";
-        :Chuyển sang form Thêm Món ăn với Tên/Mô tả điền sẵn từ AI;
-        :Lưu Món ăn mới;
-      else (Không)
-        :Lưu trữ lịch sử để tham khảo sau;
-      endif
+      :Trả về danh sách gợi ý;
     endif
+    |Quản lý|
+    :Hiển thị kết quả (lỗi hoặc danh sách gợi ý) trên màn hình;
     stop
     @enduml
     ```
 
-### 3.5. Sơ đồ Trạng thái (State Diagram) {#sơ-đồ-trạng-thái-state-diagram .unnumbered}
+### 3.6. Sơ đồ Trạng thái (State Diagram) {#sơ-đồ-trạng-thái-state-diagram .unnumbered}
 
-#### 3.5.1. Vòng đời Đơn hàng (Order Status) {#vòng-đời-đơn-hàng-order-status .unnumbered}
+#### 3.6.1. Vòng đời Đơn hàng (Order Status) {#vòng-đời-đơn-hàng-order-status .unnumbered}
 
     ```mermaid
     stateDiagram-v2
@@ -2880,7 +3847,7 @@ Integration)
         PAID --> [*]
     ```
 
-#### 3.5.2. Vòng đời Hóa đơn (Invoice Status) {#vòng-đời-hóa-đơn-invoice-status .unnumbered}
+#### 3.6.2. Vòng đời Hóa đơn (Invoice Status) {#vòng-đời-hóa-đơn-invoice-status .unnumbered}
 
     ```mermaid
     stateDiagram-v2
@@ -2894,7 +3861,7 @@ Integration)
         CANCELED --> [*]
     ```
 
-#### 3.5.3. Trạng thái Bàn phục vụ (Table Status) {#trạng-thái-bàn-phục-vụ-table-status .unnumbered}
+#### 3.6.3. Trạng thái Bàn phục vụ (Table Status) {#trạng-thái-bàn-phục-vụ-table-status .unnumbered}
 
 *Ghi chú: Trong hệ thống thực tế, trạng thái bàn được quản lý qua cờ `boolean available` (true = AVAILABLE, false = OCCUPIED) thay vì sử dụng Enum.*
 
@@ -2906,7 +3873,7 @@ Integration)
         OCCUPIED --> AVAILABLE : Order bị hủy
     ```
 
-#### 3.5.4. Vòng đời Voucher {#vòng-đời-voucher .unnumbered}
+#### 3.6.4. Vòng đời Voucher {#vòng-đời-voucher .unnumbered}
 
 *Ghi chú: Vòng đời của Voucher trong mã nguồn là sự kết hợp trạng thái của 2 Entity: trạng thái Active/Inactive được điều khiển qua `Voucher.active`, trong khi trạng thái Exchanged/Used/Expired được xác định qua `UserVoucher.used` và thời hạn `expiryAt`.*
 

@@ -1,11 +1,16 @@
 package com.example.DtaAssigement.service;
 
+import com.example.DtaAssigement.dto.common.PageMetadata;
+import com.example.DtaAssigement.dto.common.PagedResponse;
 import com.example.DtaAssigement.dto.foodtrends.FoodTrendItemDTO;
 import com.example.DtaAssigement.dto.foodtrends.FoodTrendsResponse;
+import com.example.DtaAssigement.dto.foodtrends.RawTrendItemDTO;
+import com.example.DtaAssigement.dto.foodtrends.RawTrendsResponse;
 import com.example.DtaAssigement.dto.llama.FoodTrend;
 import com.example.DtaAssigement.dto.llama.FoodTrendQueryItem;
 import com.example.DtaAssigement.dto.llama.FoodTrendQueryResponse;
 import com.example.DtaAssigement.dto.queue.FoodTrendBatchMessage;
+import com.example.DtaAssigement.dto.serpapi.SerpTrendingNowResponse.Category;
 import com.example.DtaAssigement.dto.serpapi.SerpTrendingNowResponse;
 import com.example.DtaAssigement.entity.RawGoogleTrend;
 import com.example.DtaAssigement.entity.TrendingFood;
@@ -26,6 +31,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service for analyzing food trends using SerpAPI and Llama AI
@@ -164,6 +173,15 @@ public class TrendingFoodAnalyzerSerpApi {
                     .fetchedAt(LocalDateTime.now())
                     .build();
 
+            // Set categories (names only, not full objects)
+            if (trend.getCategories() != null) {
+                List<String> categoryNames = trend.getCategories().stream()
+                        .map(Category::getName)
+                        .limit(10)
+                        .collect(Collectors.toList());
+                raw.setCategoriesList(categoryNames);
+            }
+
             // Set trend breakdown (related queries) nếu có
             if (trend.getTrendBreakdown() != null) {
                 raw.setTrendBreakdownList(trend.getTrendBreakdown().stream()
@@ -294,6 +312,82 @@ public class TrendingFoodAnalyzerSerpApi {
     }
 
     // =========================================================================
+    // API: Get raw trends from database
+    // =========================================================================
+
+    /**
+     * Get raw trends from database for display in frontend — phân trang offset.
+     * Nếu date = null thì get all, không lọc theo ngày.
+     *
+     * @param geo   Mã quốc gia (VN, US, ...), null = get all locations
+     * @param date  Ngày cần xem raw trends, null = get all dates
+     * @param page  Trang (1-based)
+     * @param limit Kích thước trang
+     * @return RawTrendsResponse chứa danh sách raw trends + pagination metadata
+     */
+    public RawTrendsResponse getRawTrends(String geo, LocalDate date, int page, int limit) {
+        log.info("Getting raw trends (paginated): geo={}, date={}, page={}, limit={}", geo, date, page, limit);
+
+        int pageZeroBased = Math.max(0, page - 1);
+        Pageable pageable = PageRequest.of(pageZeroBased, limit);
+
+        Page<RawGoogleTrend> trendPage;
+        if (date != null && geo != null) {
+            trendPage = rawGoogleTrendRepository.findByLocationAndFetchedDateOrderByFetchedAtDesc(geo, date, pageable);
+        } else if (geo != null) {
+            trendPage = rawGoogleTrendRepository.findByLocationOrderByFetchedAtDesc(geo, pageable);
+        } else {
+            trendPage = rawGoogleTrendRepository.findAllByOrderByFetchedAtDesc(pageable);
+        }
+
+        // Build pagination metadata
+        PageMetadata pagination = PageMetadata.builder()
+                .page(trendPage.getNumber() + 1) // back to 1-based
+                .pageSize(trendPage.getSize())
+                .totalItems(trendPage.getTotalElements())
+                .totalPages(trendPage.getTotalPages())
+                .hasNext(trendPage.hasNext())
+                .hasPrevious(trendPage.hasPrevious())
+                .build();
+
+        // Map entities to DTOs
+        List<RawTrendItemDTO> items = trendPage.getContent().stream()
+                .map(this::mapRawEntityToDTO)
+                .collect(Collectors.toList());
+
+        // Build generic paged response
+        PagedResponse<RawTrendItemDTO> pagedTrends = PagedResponse.<RawTrendItemDTO>builder()
+                .content(items)
+                .pagination(pagination)
+                .build();
+
+        return RawTrendsResponse.builder()
+                .totalItems((int) trendPage.getTotalElements())
+                .geo(geo)
+                .date(date)
+                .dataSource("serpapi")
+                .pagedTrends(pagedTrends)
+                .build();
+    }
+
+    /**
+     * Map RawGoogleTrend entity to DTO
+     */
+    private RawTrendItemDTO mapRawEntityToDTO(RawGoogleTrend entity) {
+        return RawTrendItemDTO.builder()
+                .id(entity.getId())
+                .query(entity.getQuery())
+                .searchVolume(entity.getSearchVolume())
+                .increasePercentage(entity.getIncreasePercentage())
+                .categories(entity.getCategories())
+                .trendBreakdown(entity.getTrendBreakdown())
+                .location(entity.getLocation())
+                .fetchedDate(entity.getFetchedDate())
+                .fetchedAt(entity.getFetchedAt())
+                .build();
+    }
+
+    // =========================================================================
     // Inner result classes
     // =========================================================================
 
@@ -341,29 +435,65 @@ public class TrendingFoodAnalyzerSerpApi {
     }
 
     /**
-     * Get historical food trends from database for a specific date
+     * Get all food trends from database with offset pagination.
+     * No date filter — returns everything matching the geo (or all if geo is null).
      *
-     * @param geo   Location code
-     * @param date  Target date
-     * @param limit Maximum number of results
-     * @return Historical food trends
+     * @param geo   Location code (VN, US, ...), null = all locations
+     * @param page  1-based page number
+     * @param limit Items per page
+     * @return PagedResponse containing paginated food trends + metadata
      */
-    public FoodTrendsResponse getHistoricalTrends(String geo, LocalDate date, Integer limit) {
-        log.info("Getting historical trends: geo={}, date={}, limit={}", geo, date, limit);
+    public PagedResponse<FoodTrendItemDTO> getAllTrendsPaginated(String geo, int page, int limit) {
+        log.info("Getting all trends (paginated): geo={}, page={}, limit={}", geo, page, limit);
 
-        // Query database for trends on the specific date
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        int pageZeroBased = Math.max(0, page - 1);
+        Pageable pageable = PageRequest.of(pageZeroBased, limit);
+
+        Page<TrendingFood> trendPage;
+        if (geo != null && !geo.isBlank()) {
+            trendPage = trendingFoodRepository.findByLocationOrderByLastUpdatedAtDesc(geo, pageable);
+        } else {
+            trendPage = trendingFoodRepository.findAllByOrderByLastUpdatedAtDesc(pageable);
+        }
+
+        PageMetadata pagination = PageMetadata.builder()
+                .page(trendPage.getNumber() + 1)
+                .pageSize(trendPage.getSize())
+                .totalItems(trendPage.getTotalElements())
+                .totalPages(trendPage.getTotalPages())
+                .hasNext(trendPage.hasNext())
+                .hasPrevious(trendPage.hasPrevious())
+                .build();
+
+        List<FoodTrendItemDTO> items = trendPage.getContent().stream()
+                .map(this::mapEntityToDTO)
+                .collect(Collectors.toList());
+
+        return PagedResponse.<FoodTrendItemDTO>builder()
+                .content(items)
+                .pagination(pagination)
+                .build();
+    }
+
+    /**
+     * Get today's food trends from database (shortcut).
+     * Used by the /food-trends/today endpoint.
+     */
+    public FoodTrendsResponse getTodayTrends(String geo, Integer limit) {
+        LocalDate today = LocalDate.now();
+        log.info("Getting today's food trends: geo={}, date={}, limit={}", geo, today, limit);
+
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
         List<TrendingFood> trends = trendingFoodRepository
-                .findByLocationAndLastUpdatedAtBetweenOrderByTrendScoreDesc(
-                        geo, startOfDay, endOfDay);
+                .findByLocationAndLastUpdatedAtBetweenOrderByTrendScoreDesc(geo, startOfDay, endOfDay);
 
         if (limit != null && trends.size() > limit) {
             trends = trends.subList(0, limit);
         }
 
-        return buildResponseFromDatabase(trends, geo, null, "database", false, date);
+        return buildResponseFromDatabase(trends, geo, null, "database", false, today);
     }
 
     /**
@@ -490,6 +620,7 @@ public class TrendingFoodAnalyzerSerpApi {
      */
     private FoodTrendItemDTO mapEntityToDTO(TrendingFood entity) {
         FoodTrendItemDTO dto = new FoodTrendItemDTO();
+        dto.setId(entity.getId());
         dto.setFoodName(entity.getQuery());
         dto.setFoodType(null); // Not stored in entity currently
         dto.setHotnessScore(entity.getTrendScore());

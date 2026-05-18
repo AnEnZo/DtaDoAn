@@ -1,7 +1,10 @@
 package com.example.DtaAssigement.controller;
 
-import com.example.DtaAssigement.dto.serpapi.*;
+import com.example.DtaAssigement.dto.common.PagedResponse;
+import com.example.DtaAssigement.dto.foodtrends.FoodTrendItemDTO;
 import com.example.DtaAssigement.dto.foodtrends.FoodTrendsResponse;
+import com.example.DtaAssigement.dto.serpapi.*;
+import com.example.DtaAssigement.dto.foodtrends.RawTrendsResponse;
 import com.example.DtaAssigement.service.SerpAPIClient;
 import com.example.DtaAssigement.service.TrendingFoodAnalyzerSerpApi;
 import io.swagger.v3.oas.annotations.Operation;
@@ -103,6 +106,30 @@ public class SerpAPIController {
         return ResponseEntity.ok(serpAPIClient.getAutocomplete(q, hl));
     }
 
+    // ===== RAW DATA ENDPOINT =====
+
+    /**
+     * Get raw trends from database (before Llama AI filtering).
+     * Returns data from raw_google_trends table.
+     */
+    @Operation(summary = "Lấy raw trends từ database", description = "Lấy danh sách trending queries thô từ Google Trends (trước khi Llama AI phân tích). "
+            + "Trả về dữ liệu từ bảng raw_google_trends với phân trang offset.")
+    @GetMapping("/food-trends/raw")
+    public ResponseEntity<RawTrendsResponse> getRawTrends(
+            @Parameter(description = "Mã quốc gia", example = "VN") @RequestParam(defaultValue = "VN") String geo,
+
+            @Parameter(description = "Ngày cần xem (format: yyyy-MM-dd, bỏ trống = get all)", example = "2026-05-12")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+
+            @Parameter(description = "Số trang (1-based)", example = "1") @RequestParam(defaultValue = "1") int page,
+
+            @Parameter(description = "Số kết quả mỗi trang", example = "20") @RequestParam(defaultValue = "20") int limit) {
+
+        log.info("API: Get raw trends (paginated) - geo={}, date={}, page={}, limit={}", geo, date, page, limit);
+        RawTrendsResponse response = trendingFoodAnalyzerSerpApi.getRawTrends(geo, date, page, limit);
+        return ResponseEntity.ok(response);
+    }
+
     // ===== FOOD TRENDS ENDPOINTS (with Llama AI Analysis) =====
 
     /**
@@ -127,21 +154,22 @@ public class SerpAPIController {
     }
 
     /**
-     * Get historical food trends from database
-     * Only returns data from database, no API calls
+     * Get all food trends from database with offset pagination.
+     * No date filter — returns all records matching the geo (or all if geo is null).
      */
-    @Operation(summary = "Lấy trends theo ngày từ database", description = "Lấy danh sách món ăn hot trends đã được lưu trong database cho một ngày cụ thể. "
+    @Operation(summary = "Lấy tất cả trends từ database (phân trang offset)", description = "Lấy danh sách món ăn/đồ uống đang hot trends từ database với phân trang offset. "
             +
-            "Chỉ trả về dữ liệu từ database, không gọi SerpAPI/Llama AI.")
+            "Không lọc theo ngày — trả về tất cả records phù hợp với geo.")
     @GetMapping("/food-trends/history")
-    public ResponseEntity<FoodTrendsResponse> getHistoricalTrends(
+    public ResponseEntity<PagedResponse<FoodTrendItemDTO>> getHistoricalTrends(
             @Parameter(description = "Mã quốc gia", example = "VN") @RequestParam(defaultValue = "VN") String geo,
 
-            @Parameter(description = "Ngày cần xem trends (format: yyyy-MM-dd)", example = "2026-02-01") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @Parameter(description = "Số trang (1-based)", example = "1") @RequestParam(defaultValue = "1") int page,
 
-            @Parameter(description = "Số lượng kết quả tối đa", example = "10") @RequestParam(defaultValue = "10") Integer limit) {
-        log.info("API: Get historical food trends - geo={}, date={}, limit={}", geo, date, limit);
-        FoodTrendsResponse response = trendingFoodAnalyzerSerpApi.getHistoricalTrends(geo, date, limit);
+            @Parameter(description = "Số kết quả mỗi trang", example = "20") @RequestParam(defaultValue = "20") int limit) {
+        log.info("API: Get all food trends (paginated) - geo={}, page={}, limit={}", geo, page, limit);
+        PagedResponse<FoodTrendItemDTO> response = trendingFoodAnalyzerSerpApi.getAllTrendsPaginated(geo, page,
+                limit);
         return ResponseEntity.ok(response);
     }
 
@@ -156,8 +184,7 @@ public class SerpAPIController {
 
             @Parameter(description = "Số lượng kết quả tối đa", example = "10") @RequestParam(defaultValue = "10") Integer limit) {
         log.info("API: Get today's food trends - geo={}, limit={}", geo, limit);
-        LocalDate today = LocalDate.now();
-        FoodTrendsResponse response = trendingFoodAnalyzerSerpApi.getHistoricalTrends(geo, today, limit);
+        FoodTrendsResponse response = trendingFoodAnalyzerSerpApi.getTodayTrends(geo, limit);
         return ResponseEntity.ok(response);
     }
 

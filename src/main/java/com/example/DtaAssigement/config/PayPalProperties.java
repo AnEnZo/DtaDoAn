@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import java.math.BigDecimal;
+
 @Component
 @ConfigurationProperties(prefix = "paypal")
 @Validated
@@ -41,4 +43,6 @@ public class PayPalProperties {
     private Integer readTimeout = 30000;
 
     private Boolean loggingEnabled = true;
+
+    private BigDecimal exchangeRateVndToUsd = new BigDecimal("25000");
 }

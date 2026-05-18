@@ -11,7 +11,6 @@ import lombok.*;
 @Getter
 @Setter
 public class RestaurantTableDTO {
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @NotBlank(message = "Tên bàn không được để trống")

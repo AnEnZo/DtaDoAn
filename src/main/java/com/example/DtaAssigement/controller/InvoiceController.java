@@ -381,8 +381,15 @@ public class InvoiceController {
      */
     @PostMapping("/paypal/webhook")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<?> paypalWebhook(@RequestBody Map<String, Object> webhookData) {
-        Map<String, Object> result = invoiceService.processPayPalWebhook(webhookData);
+    public ResponseEntity<?> paypalWebhook(
+            @RequestBody Map<String, Object> webhookData,
+            @RequestHeader(value = "PayPal-Transmission-Id", required = false) String transmissionId,
+            @RequestHeader(value = "PayPal-Transmission-Time", required = false) String transmissionTime,
+            @RequestHeader(value = "PayPal-Cert-Url", required = false) String certUrl,
+            @RequestHeader(value = "PayPal-Auth-Algo", required = false) String authAlgo,
+            @RequestHeader(value = "PayPal-Transmission-Sig", required = false) String transmissionSig) {
+        Map<String, Object> result = invoiceService.processPayPalWebhook(
+                webhookData, transmissionId, transmissionTime, certUrl, authAlgo, transmissionSig);
 
         // Notify SSE subscribers if payment was successful
         if ("success".equals(result.get("status"))) {

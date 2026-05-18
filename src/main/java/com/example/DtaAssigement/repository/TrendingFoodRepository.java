@@ -77,4 +77,18 @@ public interface TrendingFoodRepository extends JpaRepository<TrendingFood, Long
                         @Param("query") String query,
                         @Param("location") String location,
                         @Param("date") LocalDate date);
+
+        // ===== Paginated get-all methods (offset pagination) =====
+
+        /**
+         * Get all trending foods paginated, ordered by lastUpdatedAt DESC (newest first).
+         */
+        org.springframework.data.domain.Page<TrendingFood> findAllByOrderByLastUpdatedAtDesc(
+                        org.springframework.data.domain.Pageable pageable);
+
+        /**
+         * Get trending foods by location, paginated, ordered by lastUpdatedAt DESC.
+         */
+        org.springframework.data.domain.Page<TrendingFood> findByLocationOrderByLastUpdatedAtDesc(
+                        String location, org.springframework.data.domain.Pageable pageable);
 }

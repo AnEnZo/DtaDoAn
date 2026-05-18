@@ -24,9 +24,13 @@ public interface InvoiceService {
         Map<String, Object> createInvoiceWithPayPal(Long orderId, String voucherCode, Long cashierId,
                         String phoneNumber);
 
+        Map<String, Object> regeneratePayPalLink(Invoice invoice);
+
         Map<String, Object> processMomoWebhook(Map<String, String> ipnData);
 
-        Map<String, Object> processPayPalWebhook(Map<String, Object> webhookData);
+        Map<String, Object> processPayPalWebhook(Map<String, Object> webhookData,
+                        String transmissionId, String transmissionTime,
+                        String certUrl, String authAlgo, String transmissionSig);
 
         boolean deleteInvoice(Long id);
 

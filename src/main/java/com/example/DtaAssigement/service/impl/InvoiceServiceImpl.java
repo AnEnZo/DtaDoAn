@@ -13,6 +13,8 @@ import com.example.DtaAssigement.service.InvoiceService;
 import com.example.DtaAssigement.service.RevenueService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,8 @@ import java.util.UUID;
 @Transactional
 @AllArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
+
+    private static final Logger logger = LoggerFactory.getLogger(InvoiceServiceImpl.class);
 
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
@@ -221,6 +225,49 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .deeplink(deeplink)
                 .deeplinkQr(deeplinkQr)
                 .build();
+    }
+
+    // Regenerate PayPal payment link for a pending invoice
+    public Map<String, Object> regeneratePayPalLink(Invoice invoice) {
+        Map<String, Object> result = new HashMap<>();
+        if (invoice.getStatus() != InvoiceStatus.PENDING || invoice.getPaypalOrderId() == null) {
+            result.put("success", false);
+            result.put("message", "Can only regenerate link for pending PayPal invoice");
+            return result;
+        }
+        try {
+            String orderIdStr = invoice.getOrder() != null
+                    ? String.valueOf(invoice.getOrder().getId())
+                    : String.valueOf(invoice.getId());
+            String orderInfo = "Payment for order #" + orderIdStr;
+
+            Map<String, Object> paypalResp = payPalClient.createCardPaymentOrder(
+                    invoice.getTotalAmount().toPlainString(),
+                    orderIdStr,
+                    orderInfo);
+
+            if (!(boolean) paypalResp.get("success")) {
+                result.put("success", false);
+                result.put("message", paypalResp.get("message"));
+                return result;
+            }
+
+            String newPaypalOrderId = (String) paypalResp.get("paypalOrderId");
+            invoice.setPaypalOrderId(newPaypalOrderId);
+            invoiceRepo.save(invoice);
+
+            result.put("success", true);
+            result.put("message", "PayPal payment link regenerated successfully");
+            result.put("invoice", invoice);
+            result.put("approvalUrl", paypalResp.get("approvalUrl"));
+            result.put("paypalOrderId", newPaypalOrderId);
+            return result;
+
+        } catch (Exception ex) {
+            result.put("success", false);
+            result.put("message", "Error regenerating PayPal link: " + ex.getMessage());
+            return result;
+        }
     }
 
     @Override
@@ -633,9 +680,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                 Invoice existing = existingInvoiceOpt.get();
                 if (existing.getStatus() == InvoiceStatus.PENDING &&
                         existing.getPaymentMethod() == PaymentMethod.CARD && existing.getPaypalOrderId() != null) {
-                    // Nếu đã có invoice PayPal pending, trả về link thanh toán cũ hoặc tạo mới
-                    // Ở đây ta tạo mới link cho đơn giản
-                    // return regeneratePayPalLink(existing);
+                    // If there's an existing pending PayPal invoice, regenerate the link
+                    return regeneratePayPalLink(existing);
                 } else if (existing.getStatus() == InvoiceStatus.PAID) {
                     result.put("success", false);
                     result.put("message", "Order already paid");
@@ -710,12 +756,22 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public Map<String, Object> processPayPalWebhook(Map<String, Object> webhookData) {
+    public Map<String, Object> processPayPalWebhook(Map<String, Object> webhookData,
+            String transmissionId, String transmissionTime,
+            String certUrl, String authAlgo, String transmissionSig) {
         Map<String, Object> result = new HashMap<>();
 
         try {
-            // Verify signature (skip for now or implement if needed)
-            // boolean isValid = payPalClient.verifyWebhookSignature(webhookData);
+            // Verify webhook signature
+            boolean isValid = payPalClient.verifyWebhookSignature(
+                    webhookData, transmissionId, transmissionTime, certUrl, authAlgo, transmissionSig);
+            if (!isValid) {
+                logger.warn("Invalid PayPal webhook signature for event: {}",
+                        webhookData.get("event_type"));
+                result.put("status", "error");
+                result.put("message", "Invalid webhook signature");
+                return result;
+            }
 
             String eventType = (String) webhookData.get("event_type");
             Map<String, Object> resource = (Map<String, Object>) webhookData.get("resource");
@@ -749,13 +805,34 @@ public class InvoiceServiceImpl implements InvoiceService {
                     result.put("message", "Failed to capture payment");
                 }
             } else if ("PAYMENT.CAPTURE.COMPLETED".equals(eventType)) {
-                // Just update invoice if not already paid
-                // Note: resource.id here might be capture ID, not order ID.
-                // Need to check PayPal API structure. Usually supplemental_data contains
-                // order_id
-                // For simplicity, we rely on CHECKOUT.ORDER.APPROVED to capture and mark paid.
+                // PAYMENT.CAPTURE.COMPLETED fires after capture.
+                // If we already marked paid via APPROVED, this is idempotent — no-op.
+                // Otherwise, look up by capture ID (resource.id is capture ID here).
+                Invoice invoice = invoiceRepo.findByPaypalOrderId(paypalOrderId).orElse(null);
+                if (invoice == null) {
+                    // resource.id might be the capture ID; try supplemental_data.order_id
+                    Map<String, Object> supplemental = (Map<String, Object>) resource.get("supplemental_data");
+                    if (supplemental != null) {
+                        Map<String, Object> card = (Map<String, Object>) supplemental.get("card");
+                        if (card != null) {
+                            String relatedIds = (String) card.get("related_ids");
+                            logger.info("PAYMENT.CAPTURE.COMPLETED with related order ID from supplemental: {}",
+                                    relatedIds);
+                        }
+                    }
+                    result.put("status", "success");
+                    result.put("message", "Event received but invoice not found by capture ID");
+                    return result;
+                }
+                if (invoice.getStatus() == InvoiceStatus.PAID) {
+                    logger.info("Invoice {} already marked PAID, ignoring duplicate PAYMENT.CAPTURE.COMPLETED",
+                            invoice.getId());
+                } else {
+                    markInvoicePaid(invoice.getId());
+                    result.put("orderId", invoice.getOrder().getId());
+                }
                 result.put("status", "success");
-                result.put("message", "Event received");
+                result.put("message", "Payment completed and invoice updated");
             } else {
                 result.put("status", "ignored");
                 result.put("message", "Event type not handled: " + eventType);

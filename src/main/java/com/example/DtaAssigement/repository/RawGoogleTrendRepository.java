@@ -8,6 +8,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 /**
  * Repository for RawGoogleTrend entity.
  * Lưu data thô từ SerpAPI/Google Trends trước khi Llama phân tích.
@@ -31,4 +34,28 @@ public interface RawGoogleTrendRepository extends JpaRepository<RawGoogleTrend, 
      */
     Optional<RawGoogleTrend> findByQueryAndLocationAndFetchedDate(
             String query, String location, LocalDate fetchedDate);
+
+    /**
+     * Lấy raw trends phân trang theo (location, ngày) với offset + limit.
+     * Order theo fetchedAt DESC (mới nhất trước).
+     */
+    Page<RawGoogleTrend> findByLocationAndFetchedDateOrderByFetchedAtDesc(
+            String location, LocalDate fetchedDate, Pageable pageable);
+
+    /**
+     * Lấy tất cả raw trends phân trang theo location, không lọc theo ngày.
+     * Order theo fetchedAt DESC (mới nhất trước).
+     */
+    Page<RawGoogleTrend> findByLocationOrderByFetchedAtDesc(String location, Pageable pageable);
+
+    /**
+     * Lấy tất cả raw trends phân trang, không lọc theo location hay ngày.
+     * Order theo fetchedAt DESC (mới nhất trước).
+     */
+    Page<RawGoogleTrend> findAllByOrderByFetchedAtDesc(Pageable pageable);
+
+    /**
+     * Đếm tổng số record cho (location, ngày) — dùng để xác nhận totalItems.
+     */
+    long countByLocationAndFetchedDate(String location, LocalDate fetchedDate);
 }

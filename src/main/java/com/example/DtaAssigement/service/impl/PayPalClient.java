@@ -1,6 +1,8 @@
 package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.config.PayPalProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paypal.core.PayPalEnvironment;
 import com.paypal.core.PayPalHttpClient;
 import com.paypal.http.HttpResponse;
@@ -8,7 +10,12 @@ import com.paypal.orders.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -24,6 +31,9 @@ public class PayPalClient {
     private static final Logger logger = LoggerFactory.getLogger(PayPalClient.class);
 
     private final PayPalProperties props;
+    private final ObjectMapper objectMapper;
+    @Qualifier("restTemplate")
+    private final RestTemplate restTemplate;
     private PayPalHttpClient client;
 
     /**
@@ -55,9 +65,9 @@ public class PayPalClient {
         Map<String, Object> result = new HashMap<>();
 
         try {
-            // Convert VND to USD (rough conversion, adjust rate as needed)
+            // Convert VND to USD using configured exchange rate
             BigDecimal amountVnd = new BigDecimal(amount);
-            BigDecimal amountUsd = amountVnd.divide(new BigDecimal("25000"), 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal amountUsd = amountVnd.divide(props.getExchangeRateVndToUsd(), 2, BigDecimal.ROUND_HALF_UP);
 
             logger.info("Creating PayPal order - orderId: {}, amount: {} VND ({} USD)",
                     orderId, amount, amountUsd.toPlainString());
@@ -192,25 +202,96 @@ public class PayPalClient {
     }
 
     /**
-     * Verify webhook signature (simplified - for production, implement proper
-     * verification)
-     * For now, we'll validate webhook events by checking order status
-     * 
-     * @param webhookEvent Webhook event data
-     * @return true if valid
+     * Verify webhook signature to ensure the webhook event actually came from PayPal.
+     * Calls PayPal's /v2/notifications/verify-webhook-signature REST API via RestTemplate
+     * with Basic Auth (client credentials).
+     *
+     * @param webhookEvent        Raw webhook event data (already parsed from JSON body)
+     * @param transmissionId     PayPal-Transmission-Id header
+     * @param transmissionTime   PayPal-Transmission-Time header
+     * @param certUrl            PayPal-Cert-Url header
+     * @param authAlgo           PayPal-Auth-Algo header
+     * @param transmissionSig    PayPal-Transmission-Sig header
+     * @return true if signature is valid, false otherwise
      */
-    public boolean verifyWebhookSignature(Map<String, Object> webhookEvent) {
-        // For sandbox testing, we can skip signature verification
-        // In production, implement proper webhook signature verification using PayPal
-        // SDK
+    @SuppressWarnings("unchecked")
+    public boolean verifyWebhookSignature(
+            Map<String, Object> webhookEvent,
+            String transmissionId,
+            String transmissionTime,
+            String certUrl,
+            String authAlgo,
+            String transmissionSig) {
 
         if (props.getLoggingEnabled()) {
-            logger.info("Webhook event received: {}", webhookEvent);
+            logger.info("Verifying PayPal webhook signature - transmissionId: {}", transmissionId);
         }
 
-        // Basic validation
-        return webhookEvent != null &&
-                webhookEvent.containsKey("event_type") &&
-                webhookEvent.containsKey("resource");
+        try {
+            String webhookId = props.getWebhookId();
+            if (webhookId == null || webhookId.isEmpty()) {
+                logger.warn("PayPal webhook-id is not configured, skipping verification");
+                return false;
+            }
+
+            // Step 1: Get access token using client credentials (Basic Auth)
+            String tokenUrl = props.getApiBaseUrl() + "/v1/oauth2/token";
+            HttpHeaders tokenHeaders = new HttpHeaders();
+            tokenHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            tokenHeaders.setBasicAuth(props.getClientId(), props.getClientSecret());
+
+            HttpEntity<String> tokenEntity = new HttpEntity<>(String.format(
+                    "grant_type=client_credentials&ignoreCache=true&return_authn_schemes=false&return_client_metadata=true&return_unconsented_scopes=true"),
+                    tokenHeaders);
+
+            var tokenResp = restTemplate.exchange(tokenUrl, org.springframework.http.HttpMethod.POST,
+                    tokenEntity, Map.class);
+            Map<String, Object> tokenBody = tokenResp.getBody();
+            String accessToken = tokenBody != null ? (String) tokenBody.get("access_token") : null;
+
+            if (accessToken == null) {
+                logger.error("Failed to obtain PayPal access token");
+                return false;
+            }
+
+            // Step 2: Verify webhook signature
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("auth_algo", authAlgo);
+            requestBody.put("cert_url", certUrl);
+            requestBody.put("transmission_id", transmissionId);
+            requestBody.put("transmission_sig", transmissionSig);
+            requestBody.put("transmission_time", transmissionTime);
+            requestBody.put("webhook_id", webhookId);
+            requestBody.put("webhook_event", webhookEvent);
+
+            String jsonBody = objectMapper.writeValueAsString(requestBody);
+            String verifyUrl = props.getApiBaseUrl() + "/v2/notifications/verify-webhook-signature";
+
+            HttpHeaders verifyHeaders = new HttpHeaders();
+            verifyHeaders.setContentType(MediaType.APPLICATION_JSON);
+            verifyHeaders.setBearerAuth(accessToken);
+            verifyHeaders.set("PayPal-Request-Id", java.util.UUID.randomUUID().toString());
+
+            HttpEntity<String> verifyEntity = new HttpEntity<>(jsonBody, verifyHeaders);
+            var verifyResp = restTemplate.exchange(verifyUrl, org.springframework.http.HttpMethod.POST,
+                    verifyEntity, Map.class);
+            Map<String, Object> verifyBody = verifyResp.getBody();
+
+            if (props.getLoggingEnabled()) {
+                logger.info("Webhook verification response: {}", verifyBody);
+            }
+
+            boolean isValid = verifyBody != null && "SUCCESS".equals(verifyBody.get("verification_status"));
+            logger.info("Webhook signature verification result: {} (status={})",
+                    isValid ? "VALID" : "INVALID", verifyBody != null ? verifyBody.get("verification_status") : "null");
+            return isValid;
+
+        } catch (JsonProcessingException e) {
+            logger.error("Failed to serialize webhook event for verification", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Error verifying PayPal webhook signature", e);
+            return false;
+        }
     }
 }

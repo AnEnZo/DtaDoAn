@@ -54,18 +54,13 @@ public class VoucherServiceImpl implements VoucherService {
                     voucher.setDiscountValue(updatedVoucher.getDiscountValue());
                     voucher.setMinOrderAmount(updatedVoucher.getMinOrderAmount());
                     voucher.setActive(updatedVoucher.isActive());
+                    voucher.setRequiredPoints(updatedVoucher.getRequiredPoints());
+                    voucher.setImageUrl(updatedVoucher.getImageUrl());
                     return voucherRepository.save(voucher);
                 })
                 .orElseThrow(() -> new RuntimeException("Voucher not found"));
     }
 
-    @Override
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "vouchers", key = "#id"),
-                    @CacheEvict(value = "vouchers", key = "'all'")
-            }
-    )
     public void deleteVoucher(Long id) {
         voucherRepository.deleteById(id);
     }
