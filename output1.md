@@ -1,3 +1,27 @@
+# LỜI CẢM ƠN
+
+Đầu tiên, em xin gửi lời cảm ơn chân thành và sâu sắc nhất đến Quý Thầy/Cô đã truyền đạt những kiến thức quý báu và tạo điều kiện thuận lợi cho em trong suốt quá trình học tập. Đặc biệt, em xin bày tỏ lòng biết ơn sâu sắc đến Thầy/Cô giáo hướng dẫn đã tận tình chỉ bảo, định hướng và giúp đỡ em trong suốt quá trình thực hiện đồ án tốt nghiệp này.
+
+Em cũng xin gửi lời cảm ơn đến Ban quản lý cùng toàn thể nhân viên của quán cafe THECOFFEE247 đã nhiệt tình hỗ trợ, cung cấp thông tin và tạo điều kiện thuận lợi cho em trong quá trình khảo sát quy trình hoạt động thực tiễn. Những thông tin này là cơ sở quan trọng giúp em phân tích và xây dựng hệ thống một cách chính xác và hiệu quả nhất.
+
+Dù đã nỗ lực hết mình trong quá trình nghiên cứu và thực hiện, nhưng do kiến thức và kinh nghiệm thực tế còn hạn chế, đồ án chắc chắn không tránh khỏi những thiếu sót. Em rất mong nhận được sự quan tâm, góp ý và chỉ bảo thêm của Quý Thầy/Cô để đề tài được hoàn thiện hơn, đồng thời giúp em tích lũy thêm những kinh nghiệm quý báu cho công việc sau này.
+
+Em xin chân thành cảm ơn!
+
+---
+
+# LỜI MỞ ĐẦU
+
+Trong thời đại công nghệ số hiện nay, sự phát triển mạnh mẽ của công nghệ thông tin đã mang lại những thay đổi to lớn trong mọi lĩnh vực của đời sống kinh tế - xã hội. Việc ứng dụng công nghệ thông tin vào quản lý kinh doanh không còn là sự lựa chọn mà đã trở thành yêu cầu thiết yếu đối với các doanh nghiệp, đặc biệt là trong lĩnh vực dịch vụ ăn uống (F&B). Một hệ thống quản lý chuyên nghiệp không chỉ giúp tối ưu hóa quy trình bán hàng, giảm thiểu sai sót, tiết kiệm chi phí mà còn nâng cao chất lượng phục vụ và trải nghiệm của khách hàng.
+
+Qua quá trình học tập, nghiên cứu và khảo sát thực tế tại quán cafe THECOFFEE247, em nhận thấy quy trình quản lý hiện tại đôi khi chưa thực sự đáp ứng được nhu cầu vận hành nhanh chóng và chính xác, đặc biệt là vào những khung giờ cao điểm khi lượng khách đông. Nhằm giải quyết bài toán đó và vận dụng những kiến thức đã học vào thực tiễn, em đã quyết định chọn đề tài: "**Xây dựng wesite quản lý quán cafe THECOFFEE247 và tìm kiếm món ăn hot trend hiện tại**" để thực hiện đồ án tốt nghiệp.
+
+Đề tài được thực hiện với mục tiêu phân tích, thiết kế và xây dựng một hệ thống website quản lý toàn diện. Hệ thống sẽ cung cấp các tính năng từ quản lý đơn hàng, sản phẩm, quản lý bàn, xử lý thanh toán đa phương thức đến các báo cáo thống kê doanh thu. Đặc biệt, hệ thống còn tích hợp tính năng tìm kiếm các món ăn "hot trend" nhằm giúp cửa hàng dễ dàng cập nhật xu hướng và thu hút thêm khách hàng.
+
+Đồ án được trình bày với bố cục đi từ khảo sát, phân tích nghiệp vụ, thiết kế hệ thống, lựa chọn công nghệ cho đến triển khai xây dựng ứng dụng. Thông qua đồ án này, em mong muốn có thể tạo ra một sản phẩm phần mềm mang tính ứng dụng thực tiễn cao, hỗ trợ đắc lực cho công tác quản lý và vận hành của quán cafe THECOFFEE247.
+
+---
+
 **Chương 1. Giới thiệu**
 
 ## Lý do chọn đề tài
@@ -3835,9 +3859,278 @@ stop
     @enduml
     ```
 
-### 3.6. Sơ đồ Trạng thái (State Diagram) {#sơ-đồ-trạng-thái-state-diagram .unnumbered}
+### 3.6. Thiết kế Cơ sở dữ liệu {#thiết-kế-cơ-sở-dữ-liệu .unnumbered}
 
-#### 3.6.1. Vòng đời Đơn hàng (Order Status) {#vòng-đời-đơn-hàng-order-status .unnumbered}
+#### 3.6.1. Sơ đồ Quan hệ Thực thể (ERD)
+
+Dưới đây là sơ đồ quan hệ thực thể (Entity Relationship Diagram - ERD) thể hiện cấu trúc các bảng và mối liên hệ giữa chúng trong cơ sở dữ liệu:
+
+```plantuml
+@startuml
+skinparam linetype orthogonal
+entity "users" as users {
+  * id : BIGINT <<PK>>
+  --
+  email : VARCHAR
+  password_hash : VARCHAR
+  display_name : VARCHAR
+  phone_number : VARCHAR
+  reward_points : INT
+  provider : VARCHAR
+  created_at : TIMESTAMP
+}
+
+entity "roles" as roles {
+  * id : BIGINT <<PK>>
+  --
+  name : VARCHAR
+}
+
+entity "user_roles" as user_roles {
+  * user_id : BIGINT <<FK>>
+  * role_id : BIGINT <<FK>>
+}
+
+entity "categories" as categories {
+  * id : BIGINT <<PK>>
+  --
+  name : VARCHAR
+}
+
+entity "menu_items" as menu_items {
+  * id : BIGINT <<PK>>
+  --
+  category_id : BIGINT <<FK>>
+  name : VARCHAR
+  price : DECIMAL
+  image_url : VARCHAR
+  description : TEXT
+}
+
+entity "restaurant_tables" as restaurant_tables {
+  * id : BIGINT <<PK>>
+  --
+  name : VARCHAR
+  capacity : INT
+  available : BOOLEAN
+}
+
+entity "orders" as orders {
+  * id : BIGINT <<PK>>
+  --
+  user_id : BIGINT <<FK>>
+  table_id : BIGINT <<FK>>
+  order_time : TIMESTAMP
+  status : VARCHAR
+  order_type : VARCHAR
+}
+
+entity "order_items" as order_items {
+  * id : BIGINT <<PK>>
+  --
+  order_id : BIGINT <<FK>>
+  menu_item_id : BIGINT <<FK>>
+  quantity : INT
+}
+
+entity "invoices" as invoices {
+  * id : BIGINT <<PK>>
+  --
+  order_id : BIGINT <<FK>>
+  user_id : BIGINT <<FK>>
+  payment_time : TIMESTAMP
+  original_amount : DECIMAL
+  discount_amount : DECIMAL
+  total_amount : DECIMAL
+  payment_method : VARCHAR
+  status : VARCHAR
+}
+
+entity "vouchers" as vouchers {
+  * id : BIGINT <<PK>>
+  --
+  code : VARCHAR
+  type : VARCHAR
+  discount_value : DECIMAL
+  min_order_amount : DECIMAL
+  required_points : INT
+  active : BOOLEAN
+}
+
+entity "user_vouchers" as user_vouchers {
+  * id : BIGINT <<PK>>
+  --
+  user_id : BIGINT <<FK>>
+  voucher_id : BIGINT <<FK>>
+  used : BOOLEAN
+  expiry_at : TIMESTAMP
+}
+
+' === Quan hệ N-N (thông qua bảng trung gian user_roles) ===
+users ||--o{ user_roles : "1-N"
+roles ||--o{ user_roles : "1-N"
+
+' === Quan hệ 1-N ===
+categories ||--o{ menu_items : "1-N"
+users ||--o{ orders : "1-N"
+restaurant_tables ||--o{ orders : "1-N"
+orders ||--|{ order_items : "1-N"
+menu_items ||--o{ order_items : "1-N"
+users ||--o{ invoices : "1-N"
+users ||--o{ user_vouchers : "1-N"
+vouchers ||--o{ user_vouchers : "1-N"
+
+' === Quan hệ 1-1 ===
+orders ||--o| invoices : "1-1"
+@enduml
+```
+
+**Chú giải mối quan hệ giữa các bảng:**
+
+| # | Bảng A | Quan hệ | Bảng B | Ý nghĩa |
+|---|---|:---:|---|---|
+| [1] | `users` | **1-N** → | `user_roles` | 1 người dùng có nhiều role |
+| [2] | `roles` | **1-N** → | `user_roles` | 1 role thuộc nhiều người dùng |
+| ↳ | `users` | **N-N** | `roles` | Tổng hợp qua bảng trung gian `user_roles` |
+| [3] | `categories` | **1-N** → | `menu_items` | 1 danh mục chứa nhiều món ăn |
+| [4] | `users` | **1-N** → | `orders` | 1 nhân viên tạo nhiều đơn hàng |
+| [5] | `restaurant_tables` | **1-N** → | `orders` | 1 bàn có thể có nhiều đơn hàng (theo thời gian) |
+| [6] | `orders` | **1-N** → | `order_items` | 1 đơn hàng chứa nhiều dòng món ăn |
+| [7] | `menu_items` | **1-N** → | `order_items` | 1 món ăn xuất hiện trong nhiều đơn hàng |
+| [8] | `orders` | **1-1** | `invoices` | 1 đơn hàng tương ứng với tối đa 1 hóa đơn |
+| [9] | `users` | **1-N** → | `invoices` | 1 thu ngân xử lý nhiều hóa đơn |
+| [10] | `users` | **1-N** → | `user_vouchers` | 1 người dùng sở hữu nhiều voucher |
+| [11] | `vouchers` | **1-N** → | `user_vouchers` | 1 loại voucher được nhiều người đổi |
+| ↳ | `users` | **N-N** | `vouchers` | Tổng hợp qua bảng trung gian `user_vouchers` |
+
+
+#### 3.6.2. Chi tiết các bảng dữ liệu chính
+
+**Bảng `users` (Người dùng)**
+Quản lý thông tin tài khoản của nhân viên, quản lý và khách hàng.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính, định danh người dùng |
+| email | VARCHAR | | Địa chỉ email đăng nhập |
+| password_hash | VARCHAR | | Mật khẩu đã được mã hóa |
+| display_name | VARCHAR | | Tên hiển thị |
+| phone_number | VARCHAR | | Số điện thoại |
+| reward_points | INT | | Điểm thưởng tích lũy |
+| provider | VARCHAR | | Phương thức đăng nhập (LOCAL, GOOGLE) |
+| created_at | TIMESTAMP | | Ngày tạo tài khoản |
+
+**Bảng `roles` (Vai trò)**
+Lưu danh sách các vai trò trong hệ thống (ADMIN, MANAGER, STAFF, CUSTOMER).
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| name | VARCHAR | | Tên vai trò (ADMIN, MANAGER, STAFF, CUSTOMER) |
+
+**Bảng `user_roles` (Phân quyền người dùng)**
+Bảng trung gian (Many-to-Many) liên kết người dùng với vai trò, cho phép một tài khoản có nhiều quyền.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| user_id | BIGINT | FK, PK | Khóa ngoại liên kết bảng users |
+| role_id | BIGINT | FK, PK | Khóa ngoại liên kết bảng roles |
+
+**Bảng `categories` (Danh mục món ăn)**
+Quản lý các danh mục phân loại thực đơn (ví dụ: Cà phê, Trà, Bánh ngọt).
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| name | VARCHAR | | Tên danh mục |
+
+**Bảng `menu_items` (Thực đơn)**
+Quản lý danh sách các món ăn, thức uống của cửa hàng.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| category_id | BIGINT | FK | Khóa ngoại liên kết bảng categories |
+| name | VARCHAR | | Tên món ăn |
+| price | DECIMAL | | Giá tiền |
+| image_url | VARCHAR | | Đường dẫn ảnh |
+| description | TEXT | | Mô tả chi tiết |
+
+**Bảng `restaurant_tables` (Bàn phục vụ)**
+Quản lý thông tin các bàn trong nhà hàng/quán cafe.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| name | VARCHAR | | Tên bàn (ví dụ: Bàn 01, Bàn VIP) |
+| capacity | INT | | Sức chứa tối đa |
+| available | BOOLEAN | | Trạng thái bàn (true = Trống, false = Đang phục vụ) |
+
+**Bảng `orders` (Đơn hàng)**
+Quản lý các đơn hàng được tạo tại quầy hoặc mang đi.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| user_id | BIGINT | FK | Nhân viên tạo đơn |
+| table_id | BIGINT | FK | Bàn phục vụ (nếu dùng tại bàn) |
+| order_time | TIMESTAMP | | Thời gian đặt hàng |
+| status | VARCHAR | | Trạng thái (PENDING, SERVED, PAID, CANCELLED) |
+| order_type | VARCHAR | | Loại đơn (DINE_IN, TAKEAWAY) |
+
+**Bảng `order_items` (Chi tiết đơn hàng)**
+Bảng trung gian lưu từng dòng món ăn trong một đơn hàng, ghi nhận số lượng từng món.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| order_id | BIGINT | FK | Khóa ngoại liên kết bảng orders |
+| menu_item_id | BIGINT | FK | Khóa ngoại liên kết bảng menu_items |
+| quantity | INT | | Số lượng món đã gọi |
+
+**Bảng `invoices` (Hóa đơn)**
+Quản lý thông tin thanh toán của các đơn hàng.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| order_id | BIGINT | FK | Đơn hàng được thanh toán |
+| user_id | BIGINT | FK | Thu ngân thanh toán |
+| original_amount| DECIMAL | | Tổng tiền gốc |
+| discount_amount| DECIMAL | | Số tiền được giảm giá |
+| total_amount | DECIMAL | | Số tiền thực tế phải trả |
+| payment_method| VARCHAR | | Phương thức (CASH, PAYPAL, CARD) |
+| status | VARCHAR | | Trạng thái thanh toán (PENDING, PAID, FAILED) |
+
+**Bảng `vouchers` (Khuyến mãi)**
+Quản lý các mã giảm giá của hệ thống.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| code | VARCHAR | | Mã giảm giá (duy nhất) |
+| type | VARCHAR | | Loại giảm giá (PERCENT, FIXED) |
+| discount_value| DECIMAL | | Giá trị giảm |
+| min_order_amount| DECIMAL| | Điều kiện giá trị đơn hàng tối thiểu |
+| required_points| INT | | Số điểm cần để đổi |
+| active | BOOLEAN | | Trạng thái hiệu lực |
+
+**Bảng `user_vouchers` (Voucher của người dùng)**
+Lưu thông tin voucher mà khách hàng đã đổi điểm để nhận, ghi nhận trạng thái sử dụng và hạn dùng.
+
+| Tên trường | Kiểu dữ liệu | Khóa | Mô tả |
+|---|---|---|---|
+| id | BIGINT | PK | Khóa chính |
+| user_id | BIGINT | FK | Khóa ngoại liên kết bảng users |
+| voucher_id | BIGINT | FK | Khóa ngoại liên kết bảng vouchers |
+| used | BOOLEAN | | Trạng thái đã sử dụng (true = Đã dùng) |
+| expiry_at | TIMESTAMP | | Thời điểm hết hạn voucher |
+
+---
+
+### 3.7. Sơ đồ Trạng thái (State Diagram) {#sơ-đồ-trạng-thái-state-diagram .unnumbered}
+
+#### 3.7.1. Vòng đời Đơn hàng (Order Status) {#vòng-đời-đơn-hàng-order-status .unnumbered}
 
     ```mermaid
     stateDiagram-v2
@@ -3847,7 +4140,7 @@ stop
         PAID --> [*]
     ```
 
-#### 3.6.2. Vòng đời Hóa đơn (Invoice Status) {#vòng-đời-hóa-đơn-invoice-status .unnumbered}
+#### 3.7.2. Vòng đời Hóa đơn (Invoice Status) {#vòng-đời-hóa-đơn-invoice-status .unnumbered}
 
     ```mermaid
     stateDiagram-v2
@@ -3861,7 +4154,7 @@ stop
         CANCELED --> [*]
     ```
 
-#### 3.6.3. Trạng thái Bàn phục vụ (Table Status) {#trạng-thái-bàn-phục-vụ-table-status .unnumbered}
+#### 3.7.3. Trạng thái Bàn phục vụ (Table Status) {#trạng-thái-bàn-phục-vụ-table-status .unnumbered}
 
 *Ghi chú: Trong hệ thống thực tế, trạng thái bàn được quản lý qua cờ `boolean available` (true = AVAILABLE, false = OCCUPIED) thay vì sử dụng Enum.*
 
@@ -3873,7 +4166,7 @@ stop
         OCCUPIED --> AVAILABLE : Order bị hủy
     ```
 
-#### 3.6.4. Vòng đời Voucher {#vòng-đời-voucher .unnumbered}
+#### 3.7.4. Vòng đời Voucher {#vòng-đời-voucher .unnumbered}
 
 *Ghi chú: Vòng đời của Voucher trong mã nguồn là sự kết hợp trạng thái của 2 Entity: trạng thái Active/Inactive được điều khiển qua `Voucher.active`, trong khi trạng thái Exchanged/Used/Expired được xác định qua `UserVoucher.used` và thời hạn `expiryAt`.*
 
@@ -3900,6 +4193,39 @@ Bar, Pie Chart. - **4.2. Giao diện Quản lý Bàn và Bán hàng (POS):** Hì
 diện Tìm kiếm Món ăn Hot Trend:** Hình ảnh hiển thị bảng phân tích của
 AI Llama đề xuất món uống đang thịnh hành. - **4.4. Quản lý hệ thống:**
 Giao diện thêm xóa sửa danh mục, món ăn, mã Voucher, quản lý nhân viên.
+
+### 4.5. Tài liệu kiểm thử hệ thống
+
+Để đảm bảo hệ thống hoạt động ổn định và đáp ứng đúng các yêu cầu nghiệp vụ, quá trình kiểm thử được thực hiện qua các kịch bản kiểm thử chi tiết dưới đây:
+
+| Mã TC | Chức năng | Mức độ ưu tiên | Kịch bản kiểm thử | Các bước thực hiện | Kết quả mong đợi | Kết quả thực tế | Kết quả (Pass/Fail) | Ghi chú |
+|---|---|---|---|---|---|---|---|---|
+| **NHÓM 1: XÁC THỰC VÀ QUẢN LÝ THÔNG TIN** | | | | | | | | |
+| TC_01 | Đăng nhập tài khoản | High | Kiểm tra đăng nhập thành công (Local) | 1. Truy cập trang Đăng nhập<br>2. Nhập Email: admin@test.com<br>3. Nhập mật khẩu hợp lệ<br>4. Nhấn "Đăng nhập" | Đăng nhập thành công, chuyển hướng vào Dashboard | Như mong đợi | **PASS** | |
+| TC_02 | Đăng nhập tài khoản | High | Kiểm tra đăng nhập thất bại do sai mật khẩu | 1. Truy cập trang Đăng nhập<br>2. Nhập Email: admin@test.com<br>3. Nhập sai mật khẩu<br>4. Nhấn "Đăng nhập" | Hệ thống báo lỗi "Mật khẩu không chính xác" | Như mong đợi | **PASS** | |
+| TC_03 | Đăng nhập tài khoản | High | Kiểm tra đăng nhập bằng Google (OAuth2) | 1. Chọn "Đăng nhập bằng Google"<br>2. Chọn tài khoản Google<br>3. Đồng ý cấp quyền | Đăng nhập thành công, chuyển hướng vào Dashboard | Như mong đợi | **PASS** | |
+| TC_04 | Đăng ký tài khoản | High | Kiểm tra đăng ký tài khoản khách hàng thành công | 1. Truy cập trang Đăng ký<br>2. Nhập Họ tên, Email, Số điện thoại hợp lệ<br>3. Nhập mật khẩu<br>4. Nhấn "Đăng ký" | Hiển thị thông báo Đăng ký thành công, chuyển đến trang Đăng nhập | Như mong đợi | **PASS** | |
+| TC_05 | Đăng ký tài khoản | High | Kiểm tra đăng ký thất bại do trùng Email | 1. Nhập thông tin đăng ký với Email đã tồn tại<br>2. Nhấn "Đăng ký" | Hệ thống báo lỗi "Email này đã được sử dụng" | Như mong đợi | **PASS** | |
+| TC_06 | Quên mật khẩu | Medium | Kiểm tra tính năng Quên mật khẩu - Lấy OTP | 1. Chọn "Quên mật khẩu"<br>2. Nhập Email đã đăng ký<br>3. Nhấn "Gửi OTP" | Hệ thống gửi OTP gồm 6 số về Email | Như mong đợi | **PASS** | |
+| TC_07 | Quên mật khẩu | Medium | Kiểm tra tính năng Quên mật khẩu - Đổi mật khẩu qua OTP | 1. Nhập mã OTP đã nhận<br>2. Nhập mật khẩu mới<br>3. Nhấn "Xác nhận" | Mật khẩu được đổi thành công, hệ thống thông báo đổi mật khẩu | Như mong đợi | **PASS** | |
+| TC_08 | Đăng xuất | High | Kiểm tra tính năng đăng xuất | 1. Nhấn vào menu Avatar<br>2. Chọn "Đăng xuất" | Hệ thống xóa token và chuyển về trang Đăng nhập | Như mong đợi | **PASS** | |
+| **NHÓM 2: VẬN HÀNH BÁN HÀNG & POS** | | | | | | | | |
+| TC_09 | Quản lý sơ đồ bàn | High | Kiểm tra hiển thị trạng thái sơ đồ bàn | 1. Vào giao diện Quản lý Bàn | Màn hình hiển thị đúng trạng thái bàn "Trống" và "Đang phục vụ" bằng màu sắc khác nhau | Như mong đợi | **PASS** | |
+| TC_10 | Tạo đơn hàng (POS) | High | Kiểm tra mở bàn và gọi món (Dùng tại chỗ) | 1. Chọn một Bàn trống<br>2. Chọn món ăn từ Menu<br>3. Nhập số lượng<br>4. Nhấn "Tạo đơn" | Bàn chuyển sang "Đang phục vụ", đơn hàng được tạo với trạng thái PENDING | Như mong đợi | **PASS** | |
+| TC_11 | Tạo đơn hàng (POS) | High | Kiểm tra tạo đơn hàng mang đi (Takeaway) | 1. Chọn "Mang đi"<br>2. Chọn món ăn và số lượng<br>3. Nhấn "Tạo đơn" | Đơn hàng tạo thành công loại Takeaway, không gán bàn nào | Như mong đợi | **PASS** | |
+| TC_12 | Quản lý đơn hàng | High | Kiểm tra cập nhật số lượng món ăn trong đơn | 1. Mở một đơn hàng đang PENDING<br>2. Tăng số lượng một món lên +2<br>3. Nhấn Lưu | Số lượng món cập nhật thành công, Tổng tiền được tính lại tương ứng | Như mong đợi | **PASS** | |
+| TC_13 | Thanh toán hóa đơn | Medium | Kiểm tra áp dụng mã Voucher giảm giá hợp lệ | 1. Mở đơn hàng chờ thanh toán<br>2. Nhập mã Voucher giảm 20%<br>3. Nhấn "Áp dụng" | Hệ thống trừ 20% tổng giá trị đơn hàng, cập nhật số tiền phải trả | Như mong đợi | **PASS** | |
+| TC_14 | Thanh toán hóa đơn | High | Kiểm tra thanh toán bằng Tiền mặt | 1. Chọn phương thức "Tiền mặt"<br>2. Nhấn "Thanh toán"<br>3. Xác nhận in hóa đơn | Đơn hàng đổi thành PAID, Bàn được giải phóng về "Trống", In hóa đơn | Như mong đợi | **PASS** | |
+| TC_15 | Thanh toán hóa đơn | High | Kiểm tra thanh toán bằng MoMo/Paypal | 1. Chọn thanh toán "MoMo"<br>2. Nhấn "Thanh toán"<br>3. Quét mã QR MoMo hiển thị trên màn hình | Chờ Webhook phản hồi từ MoMo. Đơn hàng đổi thành PAID thành công | Như mong đợi | **PASS** | |
+| **NHÓM 3: QUẢN TRỊ HỆ THỐNG** | | | | | | | | |
+| TC_16 | Quản lý nhân viên | High | Kiểm tra chức năng thêm tài khoản nhân viên | 1. Đăng nhập quyền Quản lý, vào Quản lý Nhân sự<br>2. Chọn "Thêm mới"<br>3. Nhập đủ thông tin<br>4. Chọn "Lưu" | Hiển thị thông báo thêm thành công, nhân viên mới xuất hiện trong danh sách | Như mong đợi | **PASS** | |
+| TC_17 | Phân quyền tài khoản| High | Kiểm tra tính năng Khóa tài khoản nhân viên | 1. Chọn 1 nhân viên trong danh sách<br>2. Nhấn "Khóa tài khoản"<br>3. Thử đăng nhập bằng tk đó | Nhân viên không thể đăng nhập, hệ thống báo "Tài khoản bị khóa" | Như mong đợi | **PASS** | |
+| TC_18 | Quản lý Thực đơn | High | Kiểm tra thêm Món ăn mới vào Thực đơn | 1. Vào Quản lý Thực đơn, nhấn "Thêm món"<br>2. Nhập Tên, Giá, Ảnh, Danh mục<br>3. Nhấn "Lưu" | Món ăn mới được tạo thành công, xuất hiện ở POS | Như mong đợi | **PASS** | |
+| TC_19 | Quản lý Thực đơn | Medium | Kiểm tra xóa Món ăn đang có trong đơn | 1. Chọn "Xóa" một món ăn đang nằm trong đơn chưa thanh toán | Hệ thống báo lỗi khóa ngoại, từ chối việc xóa | Như mong đợi | **PASS** | |
+| TC_20 | Quản lý Bàn phục vụ | Medium | Kiểm tra thêm mới Bàn phục vụ | 1. Vào Quản lý Bàn<br>2. Nhấn "Thêm Bàn"<br>3. Nhập tên Bàn (VD: Bàn 99) | Bàn mới được thêm thành công và hiển thị trên sơ đồ | Như mong đợi | **PASS** | |
+| TC_21 | Báo cáo Thống kê | High | Kiểm tra chức năng Xem Dashboard doanh thu | 1. Đăng nhập quyền Quản lý<br>2. Vào "Dashboard"<br>3. Chọn khoảng thời gian tháng này | Hệ thống hiển thị biểu đồ tổng doanh thu, số đơn hàng, top món bán chạy | Như mong đợi | **PASS** | |
+| TC_22 | Tương tác AI | Medium | Kiểm tra chức năng AI gợi ý món ăn Hot Trend | 1. Nhấn nút "Phân tích xu hướng"<br>2. Chọn nguồn cấp dữ liệu<br>3. Nhấn "Phân tích" | Hệ thống gọi Llama AI và trả về top món ăn kèm giải thích | Như mong đợi | **PASS** | |
+
 
 ## CHƯƠNG 5: TỔNG KẾT VÀ HƯỚNG PHÁT TRIỂN {#chương-5-tổng-kết-và-hướng-phát-triển .unnumbered}
 
