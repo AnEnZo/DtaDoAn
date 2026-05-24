@@ -159,13 +159,24 @@ public class TrendingFoodAnalyzerSerpApi {
             return FetchRawResult.empty(geo);
         }
 
-        // Lưu từng item vào raw_google_trends
+        // Lưu từng item vào raw_google_trends (loại bỏ trùng lặp trong memory)
         List<SerpTrendingNowResponse.TrendingSearch> allTrends = serpResponse.getTrendingSearches();
-        List<RawGoogleTrend> toSave = new ArrayList<>();
+        Map<String, RawGoogleTrend> uniqueTrendsMap = new java.util.LinkedHashMap<>();
 
         for (SerpTrendingNowResponse.TrendingSearch trend : allTrends) {
+            String query = trend.getQuery();
+            if (query == null || query.isBlank()) {
+                continue;
+            }
+            String normalizedQuery = query.trim();
+
+            if (uniqueTrendsMap.containsKey(normalizedQuery)) {
+                log.info("⏭️ Skipping duplicate trend query in API response: '{}'", normalizedQuery);
+                continue;
+            }
+
             RawGoogleTrend raw = RawGoogleTrend.builder()
-                    .query(trend.getQuery())
+                    .query(normalizedQuery)
                     .searchVolume(trend.getSearchVolume() != null ? trend.getSearchVolume().longValue() : null)
                     .increasePercentage(trend.getIncreasePercentage())
                     .location(geo)
@@ -189,11 +200,12 @@ public class TrendingFoodAnalyzerSerpApi {
                         .collect(Collectors.toList()));
             }
 
-            toSave.add(raw);
+            uniqueTrendsMap.put(normalizedQuery, raw);
         }
 
+        List<RawGoogleTrend> toSave = new ArrayList<>(uniqueTrendsMap.values());
         rawGoogleTrendRepository.saveAll(toSave);
-        log.info("✅ Saved {} raw trends to DB for geo={}, date={}", toSave.size(), geo, today);
+        log.info("✅ Saved {} raw trends to DB (after in-memory deduplication) for geo={}, date={}", toSave.size(), geo, today);
         return FetchRawResult.ok(geo, toSave.size());
     }
 
