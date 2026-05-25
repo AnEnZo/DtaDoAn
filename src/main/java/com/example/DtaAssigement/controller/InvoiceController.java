@@ -94,7 +94,7 @@ public class InvoiceController {
                         URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
                 .collect(Collectors.joining("&"));
         // Frontend base (dev). Change to your deployed frontend if needed.
-        String frontendBase = "http://localhost:5173";
+        String frontendBase = "http://localhost:3000";
         String target = frontendBase + "/dashboard#orders" + (query.isEmpty() ? "" : ("?" + query));
         response.sendRedirect(target);
     }
@@ -418,7 +418,7 @@ public class InvoiceController {
     public void paypalSuccess(HttpServletResponse response, @RequestParam Map<String, String> params)
             throws IOException {
         // Redirect to frontend dashboard
-        String frontendBase = "http://localhost:5173";
+        String frontendBase = "http://localhost:3000";
         String target = frontendBase + "/dashboard#orders?paypal_status=success";
         response.sendRedirect(target);
     }
@@ -428,7 +428,7 @@ public class InvoiceController {
     @PreAuthorize("permitAll()")
     public void paypalCancel(HttpServletResponse response) throws IOException {
         // Redirect to frontend dashboard
-        String frontendBase = "http://localhost:5173";
+        String frontendBase = "http://localhost:3000";
         String target = frontendBase + "/dashboard#orders?paypal_status=cancel";
         response.sendRedirect(target);
     }

@@ -203,6 +203,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("Error: Role USER không tồn tại"));
 
         User user = User.builder()
+                .displayName(registerRequest.getDisplayName())
                 .username(registerRequest.getUsername())
                 .password(encodedPassword)
                 .email(registerRequest.getEmail())

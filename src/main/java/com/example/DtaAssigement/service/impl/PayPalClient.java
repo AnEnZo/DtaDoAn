@@ -265,7 +265,11 @@ public class PayPalClient {
             requestBody.put("webhook_event", webhookEvent);
 
             String jsonBody = objectMapper.writeValueAsString(requestBody);
-            String verifyUrl = props.getApiBaseUrl() + "/v2/notifications/verify-webhook-signature";
+            String verifyUrl = props.getApiBaseUrl() + "/v1/notifications/verify-webhook-signature";
+
+            logger.info("PayPal Webhook Verification Request Body: {}", jsonBody);
+            logger.info("Headers - transmissionId: {}, transmissionTime: {}, authAlgo: {}, certUrl: {}, transmissionSig: {}",
+                    transmissionId, transmissionTime, authAlgo, certUrl, transmissionSig);
 
             HttpHeaders verifyHeaders = new HttpHeaders();
             verifyHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -277,9 +281,7 @@ public class PayPalClient {
                     verifyEntity, Map.class);
             Map<String, Object> verifyBody = verifyResp.getBody();
 
-            if (props.getLoggingEnabled()) {
-                logger.info("Webhook verification response: {}", verifyBody);
-            }
+            logger.info("PayPal Webhook Verification Response: {}", verifyBody);
 
             boolean isValid = verifyBody != null && "SUCCESS".equals(verifyBody.get("verification_status"));
             logger.info("Webhook signature verification result: {} (status={})",
