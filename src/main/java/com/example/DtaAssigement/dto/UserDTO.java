@@ -55,4 +55,8 @@ public class UserDTO {
     @Schema(description = "ID from OAuth provider", accessMode = Schema.AccessMode.READ_ONLY)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String providerId;
+
+    @Schema(description = "User status (ACTIVE/INACTIVE)", accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String status;
 }

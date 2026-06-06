@@ -2,6 +2,7 @@ package com.example.DtaAssigement.service;
 
 import com.example.DtaAssigement.dto.UserDTO;
 import com.example.DtaAssigement.entity.User;
+import com.example.DtaAssigement.ennum.UserStatus;
 import com.example.DtaAssigement.payload.RegisterRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,7 @@ public interface UserService {
 
     UserDTO updateUserWithRole(Long id, com.example.DtaAssigement.dto.UserUpdateDTO userDTO, String roleName);
 
-    boolean deleteUser(Long id);
+    boolean updateUserStatus(Long id, UserStatus status);
 
     boolean existsByUsername(String username);
 

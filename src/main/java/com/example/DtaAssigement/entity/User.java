@@ -1,6 +1,7 @@
 package com.example.DtaAssigement.entity;
 
 import com.example.DtaAssigement.ennum.AuthProvider;
+import com.example.DtaAssigement.ennum.UserStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -52,8 +53,17 @@ public class User {
 
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private UserStatus status = UserStatus.ACTIVE;
+
+    public UserStatus getStatus() {
+        return this.status == null ? UserStatus.ACTIVE : this.status;
+    }
+
     @PrePersist
     public void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
+        if (status == null) status = UserStatus.ACTIVE;
     }
 }

@@ -2,6 +2,7 @@ package com.example.DtaAssigement.controller;
 
 import com.example.DtaAssigement.dto.ResetPasswordRequest;
 import com.example.DtaAssigement.ennum.AuthProvider;
+import com.example.DtaAssigement.ennum.UserStatus;
 import com.example.DtaAssigement.entity.User;
 import com.example.DtaAssigement.payload.JwtResponse;
 import com.example.DtaAssigement.payload.LoginRequest;
@@ -45,6 +46,9 @@ public class AuthController {
                 .orElse(null);
         if (user == null || user.getProvider() != AuthProvider.LOCAL) {
             return ResponseEntity.status(403).body("Invalid username or password");
+        }
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            return ResponseEntity.status(403).body("Tài khoản đã bị vô hiệu hóa");
         }
         if (user.getProvider() != AuthProvider.LOCAL) {
             return ResponseEntity.status(403).body("account not exit! ");

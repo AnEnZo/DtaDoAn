@@ -155,6 +155,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Order not found: " + id));
 
+        // Không cho phép xóa đơn hàng đã thanh toán
+        if (order.getStatus() == OrderStatus.PAID) {
+            throw new IllegalStateException("Không thể xóa đơn hàng đã thanh toán (PAID).");
+        }
+
         // Chỉ cập nhật bàn nếu đây là DINE_IN
         if (order.getTable() != null) {
             RestaurantTable table = order.getTable();

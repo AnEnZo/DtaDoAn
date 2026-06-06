@@ -32,7 +32,7 @@ chức khai thác và sử dụng có hiệu quả các nguồn tài ng
 phong phú, tiềm năng trong mọi lĩnh vực hoạt động của con người và xã
 hội.
 
-[Ngày nay](https://www.facebook.com/groups/332405046938901/), công nghệ
+Ngày nay, công nghệ
 thông tin phát triển nhanh chóng và ứng dụng vào tất cả các lĩnh vực, có
 thể nói công nghệ thông tin trở thành thước đo để đánh giá sự phát triển
 của xã hội hiện đại -- nơi mà con người đang từ bỏ cách làm việc thủ
@@ -272,11 +272,124 @@ Hệ thống website quản lý THECOFFEE247 dự kiến có các chức năng s
 
 #### 3.2.1. Use Case Tổng quan {#use-case-tổng-quan .unnumbered}
 
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam nodesep 8
+skinparam ranksep 12
+left to right direction
+actor "Nhân viên" as NV
+actor "Quản lý" as QL
+QL -[hidden]left-> NV
 
-        
+rectangle "Hệ thống Quản lý Quán Cafe" {
+
+  usecase "Xác thực OTP" as UC1
+  usecase "Quên Mật khẩu" as UC2
+  usecase "Đăng nhập" as UC3
+  usecase "Đăng ký" as UC4
+  usecase "Quản lý thông tin cá nhân" as UC5
+  usecase "Lịch sử Hóa đơn" as UC6
+  usecase "Xuất Hóa đơn" as UC7
+  usecase "tạo đơn hàng cho khách" as UC8
+  usecase "Tạo hóa đơn cho khách" as UC9
+  usecase "Chọn phương thức\nthanh toán" as UC10
+  usecase "Nhập Voucher của\nkhách và áp dụng" as UC11
+  usecase "Nhập sđt tích điểm" as UC12
+  usecase "Xem trạng thái Bàn" as UC13
+  usecase "xem và thêm/xóa món\ncho đơn của bàn đó" as UC14
+  usecase "Quản lý Bàn" as UC15
+  usecase "Quản lý Voucher" as UC16
+  usecase "Quản lý Danh mục" as UC17
+  usecase "Dashboard Thống kê" as UC18
+  usecase "Doanh thu Chi tiết" as UC19
+  usecase "Quản lý Thực đơn" as UC20
+  usecase "AI Gợi ý Trend" as UC21
+  usecase "Quản lý Người Dùng" as UC22
+  usecase "Quản lý đơn hàng" as UC23
+  usecase "Đổi Điểm lấy Voucher" as UC24
+  usecase "Quản lý Voucher Cá nhân" as UC25
+  usecase "Xem Thực đơn" as UC26
+  usecase "Gửi Đề xuất Món ăn" as UC27
+  usecase "Gửi Liên hệ" as UC28
+
+  ' Cot trai (NV + QL) xep doc
+  UC1 -[hidden]down-> UC2
+  UC2 -[hidden]down-> UC3
+  UC3 -[hidden]down-> UC4
+  UC4 -[hidden]down-> UC5
+  UC5 -[hidden]down-> UC6
+  UC6 -[hidden]down-> UC8
+  UC8 -[hidden]down-> UC13
+  UC13 -[hidden]down-> UC15
+  UC15 -[hidden]down-> UC16
+  UC16 -[hidden]down-> UC17
+  UC17 -[hidden]down-> UC18
+  UC18 -[hidden]down-> UC20
+  UC20 -[hidden]down-> UC21
+  UC21 -[hidden]down-> UC22
+  UC22 -[hidden]down-> UC23
+
+  ' Cot phai (KH) xep doc
+  UC24 -[hidden]down-> UC25
+  UC25 -[hidden]down-> UC26
+  UC26 -[hidden]down-> UC27
+  UC27 -[hidden]down-> UC28
+
+  ' Tach cot trai va cot phai
+  UC3 -[hidden]right-> UC24
+  UC6 -[hidden]right-> UC9
+  UC13 -[hidden]right-> UC26
+}
+
+actor "Khách hàng" as KH
+
+' Đổi NV và QL: right -> left (đẩy sang trái)
+NV --> UC1
+NV --> UC2
+NV --> UC3
+NV --> UC4
+NV --> UC5
+NV --> UC6
+NV --> UC8
+NV --> UC13
+
+QL --> UC15
+QL --> UC16
+QL --> UC17
+QL --> UC18
+QL --> UC20
+QL --> UC21
+QL --> UC22
+QL --> UC23
 
 
-####  {#section-1 .unnumbered}
+KH -left-> UC2
+KH -left-> UC3
+KH -left-> UC4
+KH -left-> UC5
+KH -left-> UC24
+KH -left-> UC25
+KH -left-> UC26
+KH -left-> UC27
+KH -left-> UC28
+
+UC2 ..> UC1 : <<include>>
+UC6 <|-- UC7 : Extends
+UC8 ..> UC9 : <<include>>
+UC9 ..> UC10 : <<include>>
+UC9 <|-- UC11 : Extends
+UC9 <|-- UC12 : Extends
+UC13 <|-- UC14 : Extends
+UC18 <|-- UC19 : Extends
+
+@enduml
+```
+
 
 #### 3.2.2. Use Case Chi tiết - Xác thực & Tài khoản {#use-case-chi-tiết---xác-thực-tài-khoản .unnumbered}
 
@@ -1426,7 +1539,7 @@ skinparam defaultFontName "Arial"
 left to right direction
 actor "Quản lý" as QL
 
-usecase "Thêm Món ăn" as UC24
+usecase "Quản lý Món ăn" as UC24
 usecase "Đăng nhập hệ thống" as UC01
 
 QL --> UC24
@@ -2133,6 +2246,10 @@ enum AuthProvider {
   LOCAL
   GOOGLE
 }
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
 
 class Roles {
   + id : Long
@@ -2150,6 +2267,7 @@ class User {
   + phoneNumber : String
   + rewardPoints : Integer
   + provider : AuthProvider
+  + status : UserStatus
   + createdAt : LocalDateTime
   + onCreate() : void
   + getRewardPoints() : Integer
@@ -2300,7 +2418,7 @@ RestaurantTable "1" --> "n" Order
 Order "1" --> "n" OrderItem
 OrderItem "n" --> "1" MenuItem
 MenuItem "n" --> "1" Category
-
+User "1" --> "1" UserStatus
 ' Dependencies to Enums (dotted)
 User ..> AuthProvider
 Order ..> OrderStatus
@@ -4264,3 +4382,23 @@ Giao diện thêm xóa sửa danh mục, món ăn, mã Voucher, quản lý nhân
 ```
 -   **Nâng cấp mô hình AI:** Dự đoán lượng nguyên liệu cần nhập kho mỗi
     tuần dựa trên thống kê tiêu thụ món ăn.
+
+---
+
+# TÀI LIỆU THAM KHẢO
+
+### Tiếng Việt
+[1] Nguyễn Văn Ba, Phân tích và thiết kế hệ thống thông tin, Nhà xuất bản Đại học Quốc gia Hà Nội, 2005, tr. 45-80.
+[2] Tô Văn Nam, Giáo trình Cơ sở dữ liệu, Nhà xuất bản Giáo dục, 2006, tr. 112-145.
+[3] Lê Văn Phùng, Kỹ nghệ phần mềm, Nhà xuất bản Thông tin và Truyền thông, 2011, tr. 88-120.
+
+### Tiếng Anh
+[4] Meta Platforms, Inc., ”React – A JavaScript library for building user interfaces”, Meta Open Source, 2026, Trực tuyến: https://react.dev/ [Truy cập ngày 15/05/2026].
+[5] Vercel Inc., ”Next.js Documentation”, Vercel Open Source, 2026, Trực tuyến: https://nextjs.org/docs [Truy cập ngày 20/05/2026].
+[6] Microsoft Corporation, ”TypeScript Programming Language Documentation”, Microsoft, 2026, Trực tuyến: https://www.typescriptlang.org/docs/ [Truy cập ngày 18/05/2026].
+[7] Pivotal Software, ”Spring Boot Reference Guide”, VMware/Broadcom, 2026, Trực tuyến: https://spring.io/projects/spring-boot [Truy cập ngày 10/05/2026].
+[8] PostgreSQL Global Development Group, ”PostgreSQL 16 Documentation”, PostgreSQL, 2026, Trực tuyến: https://www.postgresql.org/docs/ [Truy cập ngày 22/05/2026].
+[9] Tailwind Labs, ”Tailwind CSS Utility-First Framework Documentation”, Tailwind Labs, 2026, Trực tuyến: https://tailwindcss.com/docs [Truy cập ngày 12/05/2026].
+[10] Meta AI, ”Llama Models Documentation & Research Papers”, Meta Platforms, Inc., 2026, Trực tuyến: https://llama.meta.com/ [Truy cập ngày 05/05/2026].
+[11] MoMo Developer, ”Tài liệu tích hợp thanh toán mã QR MoMo”, MoMo, 2026, Trực tuyến: https://developers.momo.vn/ [Truy cập ngày 28/05/2026].
+[12] PayPal Developer, ”PayPal Checkout Integration Guide”, PayPal, 2026, Trực tuyến: https://developer.paypal.com/ [Truy cập ngày 29/05/2026].

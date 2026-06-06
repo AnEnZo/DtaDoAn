@@ -4,10 +4,12 @@ import com.example.DtaAssigement.security.CustomUserDetailsService;
 import com.example.DtaAssigement.security.JwtAuthenticationFilter;
 import com.example.DtaAssigement.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.example.DtaAssigement.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.example.DtaAssigement.security.oauth2.OAuth2AuthenticationFailureHandler;
 import com.example.DtaAssigement.service.impl.CustomOAuth2UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -45,6 +47,7 @@ public class SecurityConfig {
         public SecurityFilterChain filterChain(HttpSecurity http,
                         AuthenticationConfiguration authConfig,
                         OAuth2AuthenticationSuccessHandler oauth2SuccessHandler,
+                        OAuth2AuthenticationFailureHandler oauth2FailureHandler,
                         HttpCookieOAuth2AuthorizationRequestRepository cookieAuthRepository) throws Exception {
                 http
                                 .cors(Customizer.withDefaults()) // 1. Bật CORS
@@ -70,18 +73,19 @@ public class SecurityConfig {
                                                 .requestMatchers(antMatcher("/api/menu-items/**")).permitAll()
                                                 .requestMatchers(antMatcher("/api/categories/**")).permitAll()
                                                 .requestMatchers(antMatcher("/api/revenues/items/top")).permitAll()
+                                                .requestMatchers(antMatcher(HttpMethod.POST, "/api/contacts")).permitAll()
                                                 .requestMatchers(antMatcher("/**/*.html"),
                                                                 antMatcher("/**/*.js"),
                                                                 antMatcher("/**/*.css"))
                                                 .permitAll()
-
+ 
                                                 .requestMatchers("/ws/**").permitAll()
-
+ 
                                                 .anyRequest().authenticated())
-
+ 
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
+ 
                                 // Cấu hình OAuth2 login
                                 .oauth2Login(oauth2 -> oauth2
                                                 .authorizationEndpoint(auth -> auth
@@ -90,7 +94,8 @@ public class SecurityConfig {
                                                                 .baseUri("/login/oauth2/code/*"))
                                                 .userInfoEndpoint(userInfo -> userInfo
                                                                 .userService(customOAuth2UserService))
-                                                .successHandler(oauth2SuccessHandler))
+                                                .successHandler(oauth2SuccessHandler)
+                                                .failureHandler(oauth2FailureHandler))
 
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

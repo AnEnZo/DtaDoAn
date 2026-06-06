@@ -2,6 +2,7 @@ package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.dto.UserDTO;
 import com.example.DtaAssigement.ennum.AuthProvider;
+import com.example.DtaAssigement.ennum.UserStatus;
 import com.example.DtaAssigement.entity.User;
 import com.example.DtaAssigement.mapper.UserMapper;
 import com.example.DtaAssigement.payload.RegisterRequest;
@@ -165,10 +166,13 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toDTO(userRepository.save(user));
     }
 
-    public boolean deleteUser(Long id) {
-        if (!userRepository.existsById(id))
+    @Override
+    public boolean updateUserStatus(Long id, UserStatus status) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null)
             return false;
-        userRepository.deleteById(id);
+        user.setStatus(status);
+        userRepository.save(user);
         return true;
     }
 

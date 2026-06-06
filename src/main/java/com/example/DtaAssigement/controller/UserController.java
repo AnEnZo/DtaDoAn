@@ -5,6 +5,7 @@ import com.example.DtaAssigement.dto.ResetPasswordRequest;
 import com.example.DtaAssigement.dto.UserDTO;
 import com.example.DtaAssigement.dto.UserUpdateDTO;
 import com.example.DtaAssigement.security.CustomUserDetails;
+import com.example.DtaAssigement.ennum.UserStatus;
 import com.example.DtaAssigement.service.EmailOtpService;
 import com.example.DtaAssigement.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -95,9 +96,16 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        boolean deleted = userService.deleteUser(id);
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deactivateUser(@PathVariable Long id) {
+        boolean deactivated = userService.updateUserStatus(id, UserStatus.INACTIVE);
+        return deactivated ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> updateUserStatus(@PathVariable Long id, @RequestParam UserStatus status) {
+        boolean updated = userService.updateUserStatus(id, status);
+        return updated ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/search")

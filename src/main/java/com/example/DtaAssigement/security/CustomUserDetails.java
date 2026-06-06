@@ -2,6 +2,7 @@ package com.example.DtaAssigement.security;
 
 import com.example.DtaAssigement.entity.Roles;
 import com.example.DtaAssigement.entity.User;
+import com.example.DtaAssigement.ennum.UserStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -89,7 +90,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return user.getStatus() != UserStatus.INACTIVE;
     }
 
     public Long getId() {

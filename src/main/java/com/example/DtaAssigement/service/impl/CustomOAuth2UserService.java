@@ -1,6 +1,7 @@
 package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.entity.User;
+import com.example.DtaAssigement.ennum.UserStatus;
 import com.example.DtaAssigement.repository.UserRepository;
 import com.example.DtaAssigement.security.CustomUserDetails;
 import com.example.DtaAssigement.service.UserService;
@@ -41,6 +42,13 @@ public class CustomOAuth2UserService
         String username = registrationId + "_" + providerId;    // ví dụ: "google_1074628347293847293"
         // Xử lý lưu hoặc cập nhật user
         User user = userService.processOAuthUser(registrationId, providerId, email, username, displayname);
+
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            throw new OAuth2AuthenticationException(
+                    new org.springframework.security.oauth2.core.OAuth2Error("user_inactive"),
+                    "Tài khoản của bạn đã bị vô hiệu hóa"
+            );
+        }
 
         // Build Spring Security user principal
         return CustomUserDetails.fromOAuth2User(user, oAuth2User.getAttributes());

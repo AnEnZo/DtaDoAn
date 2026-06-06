@@ -7,8 +7,7 @@ import com.example.DtaAssigement.repository.TableRepository;
 import com.example.DtaAssigement.service.TableService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +23,6 @@ public class TableServiceImpl implements TableService {
     private final TableRepository tableRepo;
 
     @Override
-    @Cacheable(value = "tables", key = "'all'")
     public List<RestaurantTableDTO> getAllTables() {
         return tableRepo.findAll()
                 .stream()
@@ -34,7 +32,6 @@ public class TableServiceImpl implements TableService {
 
 
     @Override
-    @CacheEvict(value = "tables", allEntries = true)
     public RestaurantTableDTO createTable(RestaurantTableDTO tableDTO) {
         if (tableDTO.getName() != null) {
             // Kiểm tra nếu bảng đã tồn tại
@@ -54,7 +51,6 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    @CacheEvict(value = "tables", allEntries = true)
     public RestaurantTable updateTableStatus(Long id, boolean available) {
         RestaurantTable table = tableRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Table not found with id: " + id));
@@ -63,7 +59,6 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    @CacheEvict(value = "tables", allEntries = true)
     public boolean deleteTable(Long id){
         if(!tableRepo.existsById(id)){return false;}
         tableRepo.deleteById(id);

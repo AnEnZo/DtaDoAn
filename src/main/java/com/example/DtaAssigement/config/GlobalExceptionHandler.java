@@ -172,6 +172,41 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
+        String response = String.format("""
+        {
+            "timestamp": "%s",
+            "status": 409,
+            "error": "Conflict",
+            "message": "%s",
+            "path": "%s"
+        }
+        """,
+                LocalDateTime.now(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException ex, HttpServletRequest request) {
+        String response = String.format("""
+        {
+            "timestamp": "%s",
+            "status": 409,
+            "error": "Conflict",
+            "message": "Không thể xóa đơn hàng vì dữ liệu liên quan (hóa đơn) vẫn còn tồn tại.",
+            "path": "%s"
+        }
+        """,
+                LocalDateTime.now(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNotFound(NoSuchElementException ex) {
         return ResponseEntity
