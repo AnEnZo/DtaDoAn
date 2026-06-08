@@ -58,10 +58,10 @@ public class VoucherController {
         return ResponseEntity.ok(voucherService.createVoucher(voucher));
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Update voucher", description = "Update a voucher with imageUrl already provided (image must be uploaded to Cloudinary separately)")
-    public ResponseEntity<Voucher> updateVoucher(@PathVariable Long id, @RequestBody @Valid Voucher voucher) {
+    public ResponseEntity<Voucher> updateVoucher(@PathVariable Long id, @RequestBody Voucher voucher) {
         return ResponseEntity.ok(voucherService.updateVoucher(id, voucher));
     }
 

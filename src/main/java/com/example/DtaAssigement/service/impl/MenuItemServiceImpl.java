@@ -100,6 +100,7 @@ public class MenuItemServiceImpl implements MenuItemService {
             existing.setName(menuItemDTO.getName());
             existing.setPrice(menuItemDTO.getPrice());
             existing.setImageUrl(menuItemDTO.getImageUrl());
+            existing.setDescription(menuItemDTO.getDescription());
         } else {
             throw new IllegalArgumentException("Category k dc để trống");
         }

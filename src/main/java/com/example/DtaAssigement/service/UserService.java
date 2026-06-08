@@ -34,6 +34,8 @@ public interface UserService {
 
     List<UserDTO> searchUser(String username);
 
+    List<UserDTO> searchUsersByPhone(String phoneNumber);
+
     Optional<User> findByEmail(String email);
 
     void updatePassword(User user, String rawPassword);

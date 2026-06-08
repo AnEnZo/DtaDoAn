@@ -114,6 +114,12 @@ public class UserController {
         return ResponseEntity.ok(userService.searchUser(keyword));
     }
 
+    @GetMapping("/search-by-phone")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ResponseEntity<List<UserDTO>> searchUsersByPhone(@RequestParam String phone) {
+        return ResponseEntity.ok(userService.searchUsersByPhone(phone));
+    }
+
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('USER','ADMIN','STAFF')")
     public ResponseEntity<UserDTO> getCurrentUser(@AuthenticationPrincipal CustomUserDetails currentUser) {

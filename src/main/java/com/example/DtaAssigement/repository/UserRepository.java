@@ -17,5 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     Optional<User> findByPhoneNumber(String phoneNumber);
+    List<User> findByPhoneNumberContaining(String phoneNumber);
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

@@ -5,10 +5,6 @@ import com.example.DtaAssigement.entity.Voucher;
 import com.example.DtaAssigement.repository.VoucherRepository;
 import com.example.DtaAssigement.service.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,41 +17,45 @@ public class VoucherServiceImpl implements VoucherService {
     private VoucherRepository voucherRepository;
 
     @Override
-    @Cacheable(value = "vouchers", key = "'all'")
     public List<Voucher> getAllVouchers() {
         return voucherRepository.findAll();
     }
 
     @Override
-    @Cacheable(value = "vouchers", key = "#id")
     public Optional<Voucher> getVoucherById(Long id) {
         return voucherRepository.findById(id);
     }
 
     @Override
-    @Caching(
-            put = { @CachePut(value = "vouchers", key = "#result.id") },
-            evict = { @CacheEvict(value = "vouchers", key = "'all'") }
-    )
     public Voucher createVoucher(Voucher voucher) {
         return voucherRepository.save(voucher);
     }
 
     @Override
-    @Caching(
-            put = { @CachePut(value = "vouchers", key = "#id") },
-            evict = { @CacheEvict(value = "vouchers", key = "'all'") }
-    )
     public Voucher updateVoucher(Long id, Voucher updatedVoucher) {
         return voucherRepository.findById(id)
                 .map(voucher -> {
-                    voucher.setCode(updatedVoucher.getCode());
-                    voucher.setType(updatedVoucher.getType());
-                    voucher.setDiscountValue(updatedVoucher.getDiscountValue());
-                    voucher.setMinOrderAmount(updatedVoucher.getMinOrderAmount());
-                    voucher.setActive(updatedVoucher.isActive());
-                    voucher.setRequiredPoints(updatedVoucher.getRequiredPoints());
-                    voucher.setImageUrl(updatedVoucher.getImageUrl());
+                    if (updatedVoucher.getCode() != null) {
+                        voucher.setCode(updatedVoucher.getCode());
+                    }
+                    if (updatedVoucher.getType() != null) {
+                        voucher.setType(updatedVoucher.getType());
+                    }
+                    if (updatedVoucher.getDiscountValue() != null) {
+                        voucher.setDiscountValue(updatedVoucher.getDiscountValue());
+                    }
+                    if (updatedVoucher.getMinOrderAmount() != null) {
+                        voucher.setMinOrderAmount(updatedVoucher.getMinOrderAmount());
+                    }
+                    if (updatedVoucher.getActive() != null) {
+                        voucher.setActive(updatedVoucher.getActive());
+                    }
+                    if (updatedVoucher.getRequiredPoints() != null) {
+                        voucher.setRequiredPoints(updatedVoucher.getRequiredPoints());
+                    }
+                    if (updatedVoucher.getImageUrl() != null) {
+                        voucher.setImageUrl(updatedVoucher.getImageUrl());
+                    }
                     return voucherRepository.save(voucher);
                 })
                 .orElseThrow(() -> new RuntimeException("Voucher not found"));

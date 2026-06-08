@@ -90,7 +90,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new IllegalStateException("Voucher expired");
             }
             voucher = userVoucher.getVoucher();
-            if (voucher.isActive()) {
+            if (Boolean.TRUE.equals(voucher.getActive())) {
                 switch (voucher.getType()) {
                     case PERCENTAGE_DISCOUNT:
                         if (originalAmount.compareTo(voucher.getMinOrderAmount()) >= 0) {
@@ -319,7 +319,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             Voucher voucher = userVoucher.getVoucher();
 
             // Kiểm tra voucher có active không
-            if (!voucher.isActive()) {
+            if (voucher.getActive() == null || !voucher.getActive()) {
                 throw new IllegalStateException("Mã voucher không còn hoạt động");
             }
 

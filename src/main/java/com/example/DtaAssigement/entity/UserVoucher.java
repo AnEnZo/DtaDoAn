@@ -17,8 +17,6 @@ import java.time.LocalDateTime;
 public class UserVoucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "UserVoucher ID", accessMode = Schema.AccessMode.READ_ONLY)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     private String code; // Mã riêng biệt, tự động sinh

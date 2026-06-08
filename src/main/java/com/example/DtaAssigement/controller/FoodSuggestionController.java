@@ -3,6 +3,7 @@ package com.example.DtaAssigement.controller;
 import com.example.DtaAssigement.dto.FoodSuggestionRequest;
 import com.example.DtaAssigement.dto.FoodSuggestionResponse;
 import com.example.DtaAssigement.entity.User;
+import com.example.DtaAssigement.security.CustomUserDetails;
 import com.example.DtaAssigement.service.FoodSuggestionService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -35,15 +36,27 @@ public class FoodSuggestionController {
      * If dish already suggested, increments vote count
      * 
      * @param request Food suggestion details
-     * @param user    Authenticated user (optional, can be anonymous)
+     * @param currentUser Authenticated user details
      * @return Created suggestion with vote count
      */
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FoodSuggestionResponse> submitSuggestion(
             @Valid @RequestBody FoodSuggestionRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
 
         log.info("POST /api/food-suggestions - Food: {}", request.getFoodName());
+
+        if (currentUser == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để thực hiện hành động này.");
+        }
+
+        User user = currentUser.getUser();
+        if (user == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để thực hiện hành động này.");
+        }
 
         FoodSuggestionResponse response = foodSuggestionService.submitSuggestion(request, user);
 

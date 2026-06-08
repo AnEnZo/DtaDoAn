@@ -19,12 +19,9 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Voucher {
-    //loại voucher có thể đổi
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "Voucher ID", accessMode = Schema.AccessMode.READ_ONLY)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @Schema(description = "Mã giảm giá")
@@ -43,7 +40,7 @@ public class Voucher {
     private BigDecimal minOrderAmount;
 
     @Schema(description = "Trạng thái voucher")
-    private boolean active;
+    private Boolean active;
 
     @Schema(description = "Điểm cần để đổi voucher")
     private Integer requiredPoints; // Số điểm cần để đổi

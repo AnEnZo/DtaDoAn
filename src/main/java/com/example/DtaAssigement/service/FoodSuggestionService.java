@@ -7,9 +7,15 @@ import com.example.DtaAssigement.entity.User;
 import com.example.DtaAssigement.repository.FoodSuggestionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,17 +28,48 @@ import java.util.Optional;
 public class FoodSuggestionService {
 
     private final FoodSuggestionRepository repository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     /**
      * Submit new food suggestion
      * If food already suggested, increment votes
      * 
      * @param request Suggestion details
-     * @param user    User who made suggestion (null if anonymous)
+     * @param user    User who made suggestion (not null)
      * @return Response with suggestion data
      */
     @Transactional
     public FoodSuggestionResponse submitSuggestion(FoodSuggestionRequest request, User user) {
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để thực hiện hành động này.");
+        }
+
+        // Rate limit: 10 times per user per month
+        String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        String limitKey = "rate:food-suggest:" + user.getId() + ":" + currentMonth;
+
+        Long count = 0L;
+        try {
+            if (redisTemplate != null) {
+                count = redisTemplate.opsForValue().increment(limitKey);
+                if (count == null) {
+                    count = 1L;
+                }
+                if (count == 1) {
+                    redisTemplate.expire(limitKey, Duration.ofDays(32));
+                }
+            } else {
+                log.warn("RedisTemplate is not available. Rate limit check is skipped.");
+            }
+        } catch (Exception e) {
+            log.error("Failed to increment rate limit key in Redis, bypassing rate limit check", e);
+        }
+
+        if (count > 10) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Bạn đã vượt quá giới hạn đề xuất 10 món ăn trong tháng này.");
+        }
+
         // Normalize food name to lowercase for consistency
         String normalizedFoodName = request.getFoodName().trim().toLowerCase();
 
@@ -57,7 +94,7 @@ public class FoodSuggestionService {
                 .description(request.getDescription())
                 .category(request.getCategory())
                 .user(user)
-                .userEmail(user != null ? user.getEmail() : request.getEmail())
+                .userEmail(user.getEmail())
                 .build();
 
         repository.save(suggestion);

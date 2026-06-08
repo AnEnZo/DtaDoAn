@@ -184,6 +184,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserDTO> searchUsersByPhone(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().length() < 3) {
+            return List.of();
+        }
+        return userRepository.findByPhoneNumberContaining(phoneNumber).stream()
+                .map(UserMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
         return userRepository.findByUsername(username).isPresent();
     }

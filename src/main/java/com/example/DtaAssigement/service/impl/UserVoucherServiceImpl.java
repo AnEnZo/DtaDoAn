@@ -39,7 +39,7 @@ public class UserVoucherServiceImpl implements UserVoucherService {
         Voucher voucher = voucherRepository.findByCode(voucherCode)
                 .orElseThrow(() -> new RuntimeException("Voucher not found"));
 
-        if (!voucher.isActive()) {
+        if (voucher.getActive() == null || !voucher.getActive()) {
             throw new RuntimeException("Voucher is not active");
         }
 

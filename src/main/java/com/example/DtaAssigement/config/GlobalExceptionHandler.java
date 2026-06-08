@@ -133,6 +133,37 @@ public class GlobalExceptionHandler {
         };
     }
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<String> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex, HttpServletRequest request) {
+        String reason = ex.getReason() != null ? ex.getReason() : ex.getMessage();
+        int status = ex.getStatusCode().value();
+        String errorName = "Error";
+        try {
+            HttpStatus httpStatus = HttpStatus.resolve(status);
+            if (httpStatus != null) {
+                errorName = httpStatus.getReasonPhrase();
+            }
+        } catch (Exception ignored) {}
+
+        String response = String.format("""
+        {
+            "timestamp": "%s",
+            "status": %d,
+            "error": "%s",
+            "message": "%s",
+            "path": "%s"
+        }
+        """,
+                LocalDateTime.now(),
+                status,
+                errorName,
+                reason,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllExceptions(Exception ex, HttpServletRequest request) {
         // Lấy chi tiết stack trace
