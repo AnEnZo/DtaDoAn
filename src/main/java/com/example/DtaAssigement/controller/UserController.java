@@ -22,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -53,13 +54,11 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserDTO userDTO) {
         if (userService.existsByUsername(userDTO.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: Username is already taken!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên đăng nhập đã được sử dụng");
         }
 
         if (userService.existsByEmail(userDTO.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: Email is already in use!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng");
         }
         UserDTO created = userService.createUser(userDTO);
         return ResponseEntity.status(201).body(created);
@@ -69,13 +68,11 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createStaff(@Validated(OnCreate.class) @RequestBody UserDTO userDTO) {
         if (userService.existsByUsername(userDTO.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: Username is already taken!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên đăng nhập đã được sử dụng");
         }
 
         if (userService.existsByEmail(userDTO.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: Email is already in use!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng");
         }
         UserDTO created = userService.createStaff(userDTO);
         return ResponseEntity.status(201).body(created);
@@ -86,12 +83,9 @@ public class UserController {
     public ResponseEntity<?> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UserUpdateDTO updateDTO) {
-        try {
-            UserDTO updated = userService.updateUserWithRole(id, updateDTO, updateDTO.getRole());
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
+        // IllegalArgumentException -> 400 (handled globally)
+        UserDTO updated = userService.updateUserWithRole(id, updateDTO, updateDTO.getRole());
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
@@ -134,13 +128,10 @@ public class UserController {
     public ResponseEntity<?> updateCurrentUser(
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @RequestBody Map<String, Object> updates) {
-        try {
-            String username = currentUser.getUsername();
-            UserDTO updated = userService.updateCurrentUser(username, updates);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
+        // IllegalArgumentException -> 400 (handled globally)
+        String username = currentUser.getUsername();
+        UserDTO updated = userService.updateCurrentUser(username, updates);
+        return ResponseEntity.ok(updated);
     }
 
     // Send OTP to current user's email to confirm sensitive updates (email/phone)
@@ -149,26 +140,21 @@ public class UserController {
     public ResponseEntity<?> sendOtpForCurrentUser(
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @RequestBody(required = false) Map<String, Object> body) {
-        try {
-            String username = currentUser.getUsername();
-            UserDTO current = userService.getUserByUsername(username);
-            String newEmail = body != null ? (String) body.get("email") : null;
-            String newPhone = body != null ? (String) body.get("phoneNumber") : null;
+        String username = currentUser.getUsername();
+        UserDTO current = userService.getUserByUsername(username);
+        String newEmail = body != null ? (String) body.get("email") : null;
+        String newPhone = body != null ? (String) body.get("phoneNumber") : null;
 
-            boolean emailChanged = newEmail != null && !newEmail.equals(current.getEmail());
-            boolean phoneChanged = newPhone != null && !newPhone.equals(current.getPhoneNumber());
+        boolean emailChanged = newEmail != null && !newEmail.equals(current.getEmail());
+        boolean phoneChanged = newPhone != null && !newPhone.equals(current.getPhoneNumber());
 
-            if (!emailChanged && !phoneChanged) {
-                // No sensitive changes; do NOT send OTP
-                return ResponseEntity.ok(Map.of("message", "Không cần OTP cho thay đổi này."));
-            }
-
-            emailOtpService.createAndSendOtp(username);
-            return ResponseEntity.ok(Map.of("message", "OTP đã được gửi tới email."));
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ex.getMessage());
+        if (!emailChanged && !phoneChanged) {
+            // No sensitive changes; do NOT send OTP
+            return ResponseEntity.ok(Map.of("message", "Không cần OTP cho thay đổi này."));
         }
+
+        emailOtpService.createAndSendOtp(username);
+        return ResponseEntity.ok(Map.of("message", "OTP đã được gửi tới email."));
     }
 
     // Verify OTP and apply provided updates (email/phone)
@@ -177,29 +163,24 @@ public class UserController {
     public ResponseEntity<?> verifyOtpAndUpdate(
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @RequestBody Map<String, Object> body) {
-        try {
-            String username = currentUser.getUsername();
-            String otp = (String) body.get("otp");
-            if (otp == null || otp.isBlank()) {
-                return ResponseEntity.badRequest().body("OTP là bắt buộc");
-            }
-            // Validate OTP -> returns User if valid
-            var user = emailOtpService.validateOtpAndGetUser(username, otp);
-
-            // Only allow specific fields
-            Map<String, Object> updates = new java.util.HashMap<>();
-            if (body.containsKey("email"))
-                updates.put("email", body.get("email"));
-            if (body.containsKey("phoneNumber"))
-                updates.put("phoneNumber", body.get("phoneNumber"));
-
-            // Apply updates
-            UserDTO updated = userService.updateCurrentUser(username, updates);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException
-                | org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+        String username = currentUser.getUsername();
+        String otp = (String) body.get("otp");
+        if (otp == null || otp.isBlank()) {
+            throw new IllegalArgumentException("OTP là bắt buộc");
         }
+        // Validate OTP -> returns User if valid (IllegalArgumentException/UsernameNotFound handled globally)
+        var user = emailOtpService.validateOtpAndGetUser(username, otp);
+
+        // Only allow specific fields
+        Map<String, Object> updates = new java.util.HashMap<>();
+        if (body.containsKey("email"))
+            updates.put("email", body.get("email"));
+        if (body.containsKey("phoneNumber"))
+            updates.put("phoneNumber", body.get("phoneNumber"));
+
+        // Apply updates
+        UserDTO updated = userService.updateCurrentUser(username, updates);
+        return ResponseEntity.ok(updated);
     }
 
     /**
@@ -212,38 +193,25 @@ public class UserController {
             @RequestParam(name = "role", defaultValue = "USER") String role,
             @Validated(OnCreate.class) @RequestBody UserDTO userDTO) {
         if (userService.existsByUsername(userDTO.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: Username is already taken!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên đăng nhập đã được sử dụng");
         }
 
         if (userService.existsByEmail(userDTO.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: Email is already in use!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng");
         }
-        try {
-            UserDTO created = ((com.example.DtaAssigement.service.impl.UserServiceImpl) userService)
-                    .createUserWithRole(userDTO, role);
-            return ResponseEntity.status(201).body(created);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
+        // IllegalArgumentException -> 400 (handled globally)
+        UserDTO created = ((com.example.DtaAssigement.service.impl.UserServiceImpl) userService)
+                .createUserWithRole(userDTO, role);
+        return ResponseEntity.status(201).body(created);
     }
 
     @PostMapping("/reset-password")
     @PreAuthorize("hasAnyRole('USER','ADMIN','STAFF')")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
-        try {
-            // 1. Validate OTP và lấy User
-            var user = emailOtpService.validateOtpAndGetUser(req.getUsername(), req.getOtp());
-
-            // 2. Cập nhật password mới
-            userService.updatePassword(user, req.getNewPassword());
-
-            return ResponseEntity.ok("Password đã được cập nhật thành công");
-        } catch (IllegalArgumentException
-                | org.springframework.security.core.userdetails.UsernameNotFoundException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
+        // IllegalArgumentException -> 400, UsernameNotFoundException -> 404 (handled globally)
+        var user = emailOtpService.validateOtpAndGetUser(req.getUsername(), req.getOtp());
+        userService.updatePassword(user, req.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Password đã được cập nhật thành công"));
     }
 
 }

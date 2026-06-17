@@ -26,9 +26,10 @@ public class SecurityBeansConfig {
     @Bean
     public OAuth2AuthenticationSuccessHandler oauth2SuccessHandler(
             JwtTokenUtil jwtTokenUtil,
-            HttpCookieOAuth2AuthorizationRequestRepository repo
+            HttpCookieOAuth2AuthorizationRequestRepository repo,
+            FrontendProperties frontendProperties
     ) {
-        return new OAuth2AuthenticationSuccessHandler(jwtTokenUtil, repo);
+        return new OAuth2AuthenticationSuccessHandler(jwtTokenUtil, repo, frontendProperties);
     }
 
 

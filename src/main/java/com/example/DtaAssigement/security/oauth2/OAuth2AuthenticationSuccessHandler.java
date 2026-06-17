@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.security.oauth2;
 
+import com.example.DtaAssigement.config.FrontendProperties;
 import com.example.DtaAssigement.security.CustomUserDetails;
 import com.example.DtaAssigement.security.JwtTokenUtil;
 
@@ -25,6 +26,7 @@ public class OAuth2AuthenticationSuccessHandler
 
     private final JwtTokenUtil jwtTokenUtil;
     private final HttpCookieOAuth2AuthorizationRequestRepository authRequestRepo; // để clear cookie/state
+    private final FrontendProperties frontendProperties;
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
@@ -40,7 +42,7 @@ public class OAuth2AuthenticationSuccessHandler
 
         // Nếu không có cookie, bạn có thể đặt luôn URL mặc định của SPA
         if (redirectUri == null || redirectUri.isBlank()) {
-            redirectUri = "http://localhost:3000/oauth2-redirect";
+            redirectUri = frontendProperties.getFrontendBaseUrl() + "/oauth2-redirect";
         }
 
         // Xây dựng URL cuối cùng
@@ -62,7 +64,7 @@ public class OAuth2AuthenticationSuccessHandler
                 .filter(c -> "redirect_uri".equals(c.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
-                .orElse("http://localhost:3000/oauth2-redirect");  // URL mặc định của SPA
+                .orElse(frontendProperties.getFrontendBaseUrl() + "/oauth2-redirect");  // URL mặc định của SPA
     }
 
 

@@ -91,9 +91,9 @@ public class DlqAdminController {
      */
     @PostMapping("/retry/{id}")
     @Operation(summary = "Retry a failed message")
-    public ResponseEntity<String> retryMessage(@PathVariable Long id) {
+    public ResponseEntity<?> retryMessage(@PathVariable Long id) {
         FailedMessage failedMessage = failedMessageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Failed message not found"));
+                .orElseThrow(() -> new java.util.NoSuchElementException("Failed message: " + id));
 
         try {
             // Deserialize and re-enqueue based on message type
@@ -109,11 +109,12 @@ public class DlqAdminController {
 
             log.info("✅ Reprocessed message ID {} to queue {}", id, targetQueue);
 
-            return ResponseEntity.ok("Message reprocessed successfully");
+            return ResponseEntity.ok(Map.of("message", "Message reprocessed successfully"));
 
         } catch (Exception e) {
             log.error("Failed to reprocess message ID {}", id, e);
-            return ResponseEntity.badRequest().body("Failed to reprocess: " + e.getMessage());
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Không thể xử lý lại message");
         }
     }
 

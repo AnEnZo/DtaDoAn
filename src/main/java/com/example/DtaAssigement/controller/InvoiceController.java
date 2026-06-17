@@ -18,6 +18,7 @@ import com.example.DtaAssigement.service.InvoiceService;
 import com.example.DtaAssigement.service.impl.MomoClient;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +30,7 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.imageio.ImageIO;
@@ -58,6 +60,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/invoices")
 @SecurityRequirement(name = "bearerAuth")
 @AllArgsConstructor
+@Slf4j
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
@@ -85,18 +88,98 @@ public class InvoiceController {
         return pageResult;
     }
 
-    // MoMo redirect bridge: redirect browser to frontend dashboard#orders
-    @GetMapping("/return/momo")
+    // MoMo redirect bridge: render a self-contained result page for the customer's
+    // browser (works directly from the public host, no frontend/localhost dependency).
+    // NOTE: this page is display-only UX. The authoritative "paid" status is set by the
+    // verified IPN webhook (/webhook/momo), not by these query params.
+    @GetMapping(value = "/return/momo", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("permitAll()")
     public void momoReturn(HttpServletResponse response, @RequestParam Map<String, String> params) throws IOException {
-        String query = params.entrySet().stream()
-                .map(e -> URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8) + "=" +
-                        URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
-                .collect(Collectors.joining("&"));
-        // Frontend base (dev). Change to your deployed frontend if needed.
-        String frontendBase = "http://localhost:3000";
-        String target = frontendBase + "/dashboard#orders" + (query.isEmpty() ? "" : ("?" + query));
-        response.sendRedirect(target);
+        boolean success = "0".equals(params.getOrDefault("resultCode", ""));
+        String title = success ? "Thanh toán thành công!" : "Thanh toán không thành công";
+        String subtitle = success
+                ? "Cảm ơn bạn. Giao dịch đã được ghi nhận."
+                : "Giao dịch chưa hoàn tất. Vui lòng thử lại hoặc liên hệ nhân viên.";
+
+        Map<String, String> details = new java.util.LinkedHashMap<>();
+        details.put("Nội dung", params.get("orderInfo"));
+        details.put("Số tiền", formatVndAmount(params.get("amount")));
+        details.put("Trạng thái", params.get("message"));
+
+        writeHtml(response, buildResultPage(success, title, subtitle, details));
+    }
+
+    /** Write a UTF-8 HTML page to the response. */
+    private void writeHtml(HttpServletResponse response, String html) throws IOException {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType(MediaType.TEXT_HTML_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write(html);
+    }
+
+    /** Format a raw VND amount string like "130000" into "130.000₫"; returns input on failure. */
+    private String formatVndAmount(String amount) {
+        if (amount == null || amount.isBlank()) return amount;
+        try {
+            long amt = new BigDecimal(amount).longValueExact();
+            return String.format("%,d", amt).replace(',', '.') + "₫";
+        } catch (Exception ignored) {
+            return amount;
+        }
+    }
+
+    /**
+     * Build a small, self-contained payment-result page shared by MoMo & PayPal.
+     * All dynamic values are HTML-escaped (reflected-XSS safe). {@code details} is an
+     * ordered label->value map; entries with blank values are skipped.
+     */
+    private String buildResultPage(boolean success, String title, String subtitle, Map<String, String> details) {
+        String accent = success ? "#16a34a" : "#dc2626";
+        String bgFrom = success ? "#0f9d58" : "#c0392b";
+        String bgTo = success ? "#16a34a" : "#e74c3c";
+        String icon = success ? "✓" : "✕";
+
+        StringBuilder rows = new StringBuilder();
+        if (details != null) {
+            for (Map.Entry<String, String> e : details.entrySet()) {
+                if (e.getValue() == null || e.getValue().isBlank()) continue;
+                rows.append("<div class=\"row\"><span>").append(escapeHtml(e.getKey()))
+                        .append("</span><b>").append(escapeHtml(e.getValue())).append("</b></div>");
+            }
+        }
+
+        return "<!DOCTYPE html><html lang=\"vi\"><head><meta charset=\"UTF-8\">"
+                + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+                + "<title>" + escapeHtml(title) + "</title><style>"
+                + "*{box-sizing:border-box;margin:0;padding:0}"
+                + "body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg," + bgFrom + "," + bgTo + ");"
+                + "min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#1f2937}"
+                + ".card{background:#fff;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.25);max-width:380px;width:100%;padding:32px 28px;text-align:center}"
+                + ".badge{width:84px;height:84px;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;"
+                + "font-size:44px;color:#fff;background:" + accent + "}"
+                + "h1{font-size:1.35rem;margin-bottom:8px;color:" + accent + "}"
+                + "p.sub{color:#6b7280;font-size:.95rem;margin-bottom:20px}"
+                + ".details{background:#f9fafb;border-radius:12px;padding:14px 16px;text-align:left}"
+                + ".row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:.9rem}"
+                + ".row span{color:#6b7280}.row b{color:#111827;text-align:right;word-break:break-word}"
+                + ".note{margin-top:18px;font-size:.8rem;color:#9ca3af}"
+                + "</style></head><body><div class=\"card\">"
+                + "<div class=\"badge\">" + icon + "</div>"
+                + "<h1>" + escapeHtml(title) + "</h1>"
+                + "<p class=\"sub\">" + escapeHtml(subtitle) + "</p>"
+                + (rows.length() > 0 ? "<div class=\"details\">" + rows + "</div>" : "")
+                + "<p class=\"note\">Bạn có thể đóng cửa sổ này và quay lại quầy.</p>"
+                + "</div></body></html>";
+    }
+
+    /** Minimal HTML escaping to prevent reflected XSS from query parameters. */
+    private String escapeHtml(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
     @GetMapping("/filter")
@@ -129,37 +212,24 @@ public class InvoiceController {
             @RequestParam Long cashierId,
             @RequestParam PaymentMethod paymentMethod,
             @RequestParam(required = false) String phoneNumber) {
-        try {
-            CreateInvoiceResponse created = invoiceService.createInvoice(orderId, voucherCode, cashierId, paymentMethod,
-                    phoneNumber);
-            return ResponseEntity.ok(created);
-        } catch (IllegalStateException | NoSuchElementException | IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi tạo hóa đơn: " + ex.getMessage());
-        }
+        // IllegalState -> 409, NoSuchElement -> 404, IllegalArgument -> 400 (handled globally)
+        CreateInvoiceResponse created = invoiceService.createInvoice(orderId, voucherCode, cashierId, paymentMethod,
+                phoneNumber);
+        return ResponseEntity.ok(created);
     }
 
     @DeleteMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> deleteInvoice(@RequestParam Long invoiceId) {
-        try {
-            boolean deleted = invoiceService.deleteInvoice(invoiceId);
-            if (deleted) {
-                return ResponseEntity.noContent().build();
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy hóa đơn để xóa.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace(); // In lỗi cụ thể ra console/log
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi xóa hóa đơn: " + e.getMessage());
+        // DataIntegrityViolationException -> 409 (handled globally)
+        boolean deleted = invoiceService.deleteInvoice(invoiceId);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
         }
+        throw new NoSuchElementException("hóa đơn để xóa");
     }
 
-    @GetMapping(value = "/{orderId}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
+    @GetMapping(value = "/{orderId}/qrcode")
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     public ResponseEntity<?> getQRCode(@PathVariable Long orderId) {
         Order order = orderRepo.readById(orderId)
@@ -218,14 +288,14 @@ public class InvoiceController {
                         .contentType(MediaType.IMAGE_PNG)
                         .body(baos.toByteArray());
             } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Không thể tạo QR từ VietQR API");
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Không thể tạo mã QR từ VietQR");
             }
 
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi trong quá trình tạo QR Code: " + e.getMessage());
+            log.error("Error generating QR code for order {}", orderId, e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Lỗi khi tạo mã QR thanh toán");
         }
     }
 
@@ -234,16 +304,9 @@ public class InvoiceController {
     public ResponseEntity<?> calculateInvoice(
             @RequestParam Long orderId,
             @RequestParam(required = false) String voucherCode) {
-        try {
-            InvoiceCalculationDTO dto = invoiceService.calculateInvoiceAmount(orderId, voucherCode);
-            return ResponseEntity.ok(dto);
-        } catch (IllegalStateException | NoSuchElementException ex) {
-            // Return clean error message for voucher errors
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi tính toán hóa đơn: " + ex.getMessage());
-        }
+        // IllegalState -> 409, NoSuchElement -> 404 (voucher/order errors handled globally)
+        InvoiceCalculationDTO dto = invoiceService.calculateInvoiceAmount(orderId, voucherCode);
+        return ResponseEntity.ok(dto);
     }
 
     /**
@@ -310,7 +373,8 @@ public class InvoiceController {
                     "Payment for order #" + orderId);
             return ResponseEntity.ok(resp);
         } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+            log.error("Error creating MoMo payment link for order {}", orderId, ex);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Không thể tạo link thanh toán MoMo");
         }
     }
 
@@ -412,25 +476,29 @@ public class InvoiceController {
         return ResponseEntity.ok(result);
     }
 
-    // PayPal redirect bridge: success
-    @GetMapping("/paypal/success")
+    // PayPal redirect bridge: success — render shared result page
+    @GetMapping(value = "/paypal/success", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("permitAll()")
     public void paypalSuccess(HttpServletResponse response, @RequestParam Map<String, String> params)
             throws IOException {
-        // Redirect to frontend dashboard
-        String frontendBase = "http://localhost:3000";
-        String target = frontendBase + "/dashboard#orders?paypal_status=success";
-        response.sendRedirect(target);
+        Map<String, String> details = new java.util.LinkedHashMap<>();
+        details.put("Phương thức", "PayPal");
+        writeHtml(response, buildResultPage(true,
+                "Thanh toán thành công!",
+                "Cảm ơn bạn. Giao dịch PayPal đã được ghi nhận.",
+                details));
     }
 
-    // PayPal redirect bridge: cancel
-    @GetMapping("/paypal/cancel")
+    // PayPal redirect bridge: cancel — render shared result page
+    @GetMapping(value = "/paypal/cancel", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("permitAll()")
     public void paypalCancel(HttpServletResponse response) throws IOException {
-        // Redirect to frontend dashboard
-        String frontendBase = "http://localhost:3000";
-        String target = frontendBase + "/dashboard#orders?paypal_status=cancel";
-        response.sendRedirect(target);
+        Map<String, String> details = new java.util.LinkedHashMap<>();
+        details.put("Phương thức", "PayPal");
+        writeHtml(response, buildResultPage(false,
+                "Đã hủy thanh toán",
+                "Bạn đã hủy giao dịch PayPal. Đơn hàng vẫn chưa được thanh toán.",
+                details));
     }
 
 }

@@ -23,9 +23,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.*;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -45,13 +47,12 @@ public class AuthController {
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .orElse(null);
         if (user == null || user.getProvider() != AuthProvider.LOCAL) {
-            return ResponseEntity.status(403).body("Invalid username or password");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Tên đăng nhập hoặc mật khẩu không chính xác");
         }
         if (user.getStatus() == UserStatus.INACTIVE) {
-            return ResponseEntity.status(403).body("Tài khoản đã bị vô hiệu hóa");
-        }
-        if (user.getProvider() != AuthProvider.LOCAL) {
-            return ResponseEntity.status(403).body("account not exit! ");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Tài khoản của bạn đã bị vô hiệu hóa");
         }
 
         try {
@@ -65,32 +66,31 @@ public class AuthController {
 
             return ResponseEntity.ok(new JwtResponse(token));
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(401).body("Invalid username or password");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Tên đăng nhập hoặc mật khẩu không chính xác");
         }
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
         if (userService.existsByUsername(registerRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: Username is already taken!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Tên đăng nhập đã được sử dụng");
         }
 
         if (userService.existsByEmail(registerRequest.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error: Email is already in use!");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email đã được sử dụng");
         }
 
         userService.registerNewUser(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("User registered successfully!");
+                .body(Map.of("message", "Đăng ký thành công"));
     }
 
     @PostMapping("/forgot-password-email")
     public ResponseEntity<?> forgotPasswordEmail(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         if (username == null || username.isBlank()) {
-            return ResponseEntity.badRequest().body("username is required");
+            throw new IllegalArgumentException("Tên đăng nhập là bắt buộc");
         }
         try {
             emailOtpService.createAndSendOtp(username);
@@ -101,22 +101,17 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                     "message", "OTP đã được gửi đến email"));
         } catch (MailException ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi gửi email");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Không thể gửi email OTP, vui lòng thử lại sau");
         }
     }
 
     @PostMapping("/reset-password-email")
     public ResponseEntity<?> resetPasswordEmail(@RequestBody ResetPasswordRequest req) {
-        try {
-            User user = emailOtpService.validateOtpAndGetUser(req.getUsername(), req.getOtp());
-            userService.updatePassword(user, req.getNewPassword());
-            return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công"));
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        // UsernameNotFoundException -> 404, IllegalArgumentException -> 400 (handled globally)
+        User user = emailOtpService.validateOtpAndGetUser(req.getUsername(), req.getOtp());
+        userService.updatePassword(user, req.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công"));
     }
 
     @PostMapping("/forgot-password-sms")
@@ -124,8 +119,8 @@ public class AuthController {
         userService.findByUsername(username).ifPresent(user -> {
             smsService.sendOtp(user.getPhoneNumber());
         });
-        // Luôn trả về thông báo OTP
-        return ResponseEntity.ok("Đã gửi mã OTP đến số điện thoại.");
+        // Luôn trả về thông báo OTP (không tiết lộ user có tồn tại hay không)
+        return ResponseEntity.ok(Map.of("message", "Đã gửi mã OTP đến số điện thoại."));
     }
 
     @PostMapping("/reset-password-sms")
@@ -137,15 +132,12 @@ public class AuthController {
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + username));
 
         if (!smsService.verifyOtp(user.getPhoneNumber(), otp)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không hợp lệ hoặc đã hết hạn.");
+            throw new IllegalArgumentException("Mã OTP không hợp lệ hoặc đã hết hạn.");
         }
 
-        try {
-            userService.updatePassword(user, newPassword);
-            return ResponseEntity.ok("Đặt lại mật khẩu thành công!");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        // IllegalArgumentException from updatePassword -> 400 (handled globally)
+        userService.updatePassword(user, newPassword);
+        return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công!"));
     }
 
 }

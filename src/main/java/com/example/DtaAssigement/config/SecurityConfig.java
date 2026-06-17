@@ -62,7 +62,7 @@ public class SecurityConfig {
                                                                 antMatcher("/favicon.ico"),
                                                                 // MoMo: allow redirect landing page and IPN webhook
                                                                 // without auth
-                                                                antMatcher("/return/momo"),
+                                                                antMatcher("/api/invoices/return/momo"),
                                                                 antMatcher("/api/invoices/webhook/momo"),
                                                                 // PayPal & SSE: allow public callbacks
                                                                 antMatcher("/api/invoices/paypal/webhook"),

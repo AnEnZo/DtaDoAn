@@ -1,5 +1,6 @@
 package com.example.DtaAssigement.security.oauth2;
 
+import com.example.DtaAssigement.config.FrontendProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     private final HttpCookieOAuth2AuthorizationRequestRepository authRequestRepo;
+    private final FrontendProperties frontendProperties;
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
@@ -41,6 +43,6 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
                 .filter(c -> "redirect_uri".equals(c.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
-                .orElse("http://localhost:3000/oauth2-redirect");
+                .orElse(frontendProperties.getFrontendBaseUrl() + "/oauth2-redirect");
     }
 }
