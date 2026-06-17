@@ -24,7 +24,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     public List<RestaurantTableDTO> getAllTables() {
-        return tableRepo.findAll()
+        return tableRepo.findByDeletedFalse()
                 .stream()
                 .map(TableMapper::toDTO)
                 .collect(Collectors.toList());
@@ -34,9 +34,9 @@ public class TableServiceImpl implements TableService {
     @Override
     public RestaurantTableDTO createTable(RestaurantTableDTO tableDTO) {
         if (tableDTO.getName() != null) {
-            // Kiểm tra nếu bảng đã tồn tại
-            if (tableRepo.existsByName(tableDTO.getName())) {
-                throw new IllegalStateException("Bàn đã tồn tại với ID: " + tableDTO.getName());
+            // Kiểm tra nếu bàn (chưa bị xóa) đã tồn tại
+            if (tableRepo.existsByNameAndDeletedFalse(tableDTO.getName())) {
+                throw new IllegalStateException("Bàn đã tồn tại với tên: " + tableDTO.getName());
             }
         }
 
@@ -44,6 +44,7 @@ public class TableServiceImpl implements TableService {
         RestaurantTable table = TableMapper.toEntity(tableDTO);
 
         table.setAvailable(true); // mặc định là true khi tạo mới
+        table.setDeleted(false);
 
         RestaurantTable created = tableRepo.save(table);
 
@@ -51,8 +52,30 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    public RestaurantTableDTO updateTable(Long id, RestaurantTableDTO tableDTO) {
+        RestaurantTable table = tableRepo.findById(id)
+                .filter(t -> !t.isDeleted())
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy bàn với id: " + id));
+
+        // Đổi tên: chặn trùng với bàn khác (chưa xóa)
+        if (tableDTO.getName() != null && !tableDTO.getName().equals(table.getName())) {
+            if (tableRepo.existsByNameAndDeletedFalse(tableDTO.getName())) {
+                throw new IllegalStateException("Bàn đã tồn tại với tên: " + tableDTO.getName());
+            }
+            table.setName(tableDTO.getName());
+        }
+        if (tableDTO.getCapacity() != null) {
+            table.setCapacity(tableDTO.getCapacity());
+        }
+
+        RestaurantTable updated = tableRepo.save(table);
+        return TableMapper.toDTO(updated);
+    }
+
+    @Override
     public RestaurantTable updateTableStatus(Long id, boolean available) {
         RestaurantTable table = tableRepo.findById(id)
+                .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new NoSuchElementException("Table not found with id: " + id));
         table.setAvailable(available);
         return tableRepo.save(table);
@@ -60,8 +83,17 @@ public class TableServiceImpl implements TableService {
 
     @Override
     public boolean deleteTable(Long id){
-        if(!tableRepo.existsById(id)){return false;}
-        tableRepo.deleteById(id);
+        RestaurantTable table = tableRepo.findById(id).orElse(null);
+        if (table == null || table.isDeleted()) {
+            return false;
+        }
+        // Không cho xóa bàn đang được sử dụng (có đơn đang phục vụ)
+        if (!table.isAvailable()) {
+            throw new IllegalStateException("Bàn đang được sử dụng, không thể xóa.");
+        }
+        // Xóa mềm: giữ lại bản ghi để bảo toàn lịch sử/đơn hàng liên quan
+        table.setDeleted(true);
+        tableRepo.save(table);
         return true;
     }
 
@@ -70,7 +102,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     public List<RestaurantTableDTO> getListAvailableTables() {
-        return tableRepo.findByAvailableTrue()
+        return tableRepo.findByAvailableTrueAndDeletedFalse()
                 .stream()
                 .map(TableMapper::toDTO)
                 .collect(Collectors.toList());

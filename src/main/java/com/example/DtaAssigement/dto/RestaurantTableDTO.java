@@ -16,7 +16,8 @@ public class RestaurantTableDTO {
     @NotBlank(message = "Tên bàn không được để trống")
     private String name;
 
-    @NotNull(message = "Trạng thái bàn (available) là bắt buộc")
+    // Optional on input: tables are always created as available; status is managed
+    // separately (updateTableStatus / order flow). Returned in responses for display.
     private Boolean available;
 
     @NotNull(message = "Sức chứa là bắt buộc")

@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,29 +92,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             }
             voucher = userVoucher.getVoucher();
             if (Boolean.TRUE.equals(voucher.getActive())) {
-                switch (voucher.getType()) {
-                    case PERCENTAGE_DISCOUNT:
-                        if (originalAmount.compareTo(voucher.getMinOrderAmount()) >= 0) {
-                            BigDecimal percent = voucher.getDiscountValue()
-                                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                            discountAmount = originalAmount.multiply(percent).setScale(2, RoundingMode.HALF_UP);
-                        }
-                        break;
-                    case FIXED_DISCOUNT:
-                        if (originalAmount.compareTo(voucher.getMinOrderAmount()) >= 0) {
-                            discountAmount = voucher.getDiscountValue();
-                        }
-                        break;
-                    case BUY_ONE_GET_ONE:
-                        Optional<OrderItem> firstItemOpt = order.getOrderItems().stream().findFirst();
-                        if (firstItemOpt.isPresent() && firstItemOpt.get().getQuantity() >= 2) {
-                            discountAmount = firstItemOpt.get().getMenuItem().getPrice();
-                        }
-                        break;
-                }
-                if (discountAmount.compareTo(originalAmount) > 0) {
-                    discountAmount = originalAmount;
-                }
+                // Dùng chung helper với calculateInvoiceAmount để preview và chốt đơn không lệch nhau
+                discountAmount = computeVoucherDiscount(voucher, order, originalAmount);
                 userVoucher.setUsed(true);
                 userVoucherRepo.save(userVoucher);
             } else {
@@ -292,6 +272,56 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceRepo.findByPaymentTimeBetween(startDt, endDt, pageable);
     }
 
+    /**
+     * Tính số tiền giảm theo loại voucher (dùng chung cho cả preview và lúc chốt hóa đơn
+     * để hai luồng không bao giờ lệch nhau). Ném IllegalStateException với thông báo
+     * thân thiện khi voucher không đủ điều kiện áp dụng.
+     *
+     * Quy tắc BUY_ONE_GET_ONE: tặng tối đa 1 sản phẩm — giảm bằng đơn giá của món ĐẮT NHẤT
+     * trong số các món có số lượng >= 2 (mua 4 vẫn chỉ tặng 1). Nếu không có món nào đạt
+     * số lượng >= 2 thì voucher không áp dụng được.
+     */
+    private BigDecimal computeVoucherDiscount(Voucher voucher, Order order, BigDecimal originalAmount) {
+        BigDecimal minOrder = voucher.getMinOrderAmount() != null ? voucher.getMinOrderAmount() : BigDecimal.ZERO;
+        BigDecimal discount = BigDecimal.ZERO;
+
+        switch (voucher.getType()) {
+            case PERCENTAGE_DISCOUNT:
+                if (originalAmount.compareTo(minOrder) < 0) {
+                    throw new IllegalStateException(minOrderMessage(minOrder));
+                }
+                BigDecimal percent = voucher.getDiscountValue()
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                discount = originalAmount.multiply(percent).setScale(2, RoundingMode.HALF_UP);
+                break;
+            case FIXED_DISCOUNT:
+                if (originalAmount.compareTo(minOrder) < 0) {
+                    throw new IllegalStateException(minOrderMessage(minOrder));
+                }
+                discount = voucher.getDiscountValue();
+                break;
+            case BUY_ONE_GET_ONE:
+                discount = order.getOrderItems().stream()
+                        .filter(it -> it.getQuantity() >= 2)
+                        .map(it -> it.getMenuItem().getPrice())
+                        .max(Comparator.naturalOrder())
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Voucher Mua 1 tặng 1 yêu cầu có ít nhất một món mua từ 2 sản phẩm trở lên"));
+                break;
+        }
+
+        // Không vượt quá tiền gốc
+        if (discount.compareTo(originalAmount) > 0) {
+            discount = originalAmount;
+        }
+        return discount;
+    }
+
+    private String minOrderMessage(BigDecimal minOrder) {
+        return String.format("Đơn hàng phải có giá trị tối thiểu %s VND để sử dụng voucher này",
+                minOrder.toPlainString());
+    }
+
     @Override
     public InvoiceCalculationDTO calculateInvoiceAmount(Long orderId, String voucherCode) {
 
@@ -323,36 +353,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new IllegalStateException("Mã voucher không còn hoạt động");
             }
 
-            // Kiểm tra đơn hàng đủ giá trị tối thiểu
-            if (originalAmount.compareTo(voucher.getMinOrderAmount()) < 0) {
-                throw new IllegalStateException(
-                        String.format("Đơn hàng phải có giá trị tối thiểu %s VND để sử dụng voucher này",
-                                voucher.getMinOrderAmount().toString()));
-            }
-
-            // Tính discount theo loại voucher
-            switch (voucher.getType()) {
-                case PERCENTAGE_DISCOUNT:
-                    BigDecimal percent = voucher.getDiscountValue()
-                            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                    discountAmount.set(originalAmount.multiply(percent).setScale(2, RoundingMode.HALF_UP));
-                    break;
-                case FIXED_DISCOUNT:
-                    discountAmount.set(voucher.getDiscountValue());
-                    break;
-                case BUY_ONE_GET_ONE:
-                    order.getOrderItems().stream().findFirst().ifPresent(item -> {
-                        if (item.getQuantity() >= 2) {
-                            discountAmount.set(item.getMenuItem().getPrice());
-                        }
-                    });
-                    break;
-            }
-
-            // Đảm bảo không vượt quá tiền gốc
-            if (discountAmount.get().compareTo(originalAmount) > 0) {
-                discountAmount.set(originalAmount);
-            }
+            // Tính discount theo loại voucher (dùng chung, đã bao gồm kiểm tra điều kiện)
+            discountAmount.set(computeVoucherDiscount(voucher, order, originalAmount));
         }
 
         BigDecimal totalAmount = originalAmount.subtract(discountAmount.get()).setScale(2, RoundingMode.HALF_UP);

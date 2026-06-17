@@ -12,4 +12,10 @@ public interface TableRepository extends JpaRepository<RestaurantTable,Long> {
     List<RestaurantTable> findByAvailableTrue(); // Lấy danh sách bàn còn trống
     boolean existsByName(String name);
 
+    // Soft-delete aware queries (exclude tables marked deleted)
+    List<RestaurantTable> findByDeletedFalse();
+    List<RestaurantTable> findByAvailableTrueAndDeletedFalse();
+    boolean existsByNameAndDeletedFalse(String name);
+    long countByDeletedFalse();
+    long countByAvailableTrueAndDeletedFalse();
 }

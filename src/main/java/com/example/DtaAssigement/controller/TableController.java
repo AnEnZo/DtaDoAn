@@ -39,6 +39,15 @@ public class TableController {
         return ResponseEntity.ok(created);
     }
 
+    // Cập nhật thông tin bàn (tên, sức chứa)
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<RestaurantTableDTO> updateTable(@PathVariable Long id,
+                                                          @Valid @RequestBody RestaurantTableDTO tableDTO) {
+        RestaurantTableDTO updated = tableService.updateTable(id, tableDTO);
+        return ResponseEntity.ok(updated);
+    }
+
     // Cập nhật trạng thái bàn
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
@@ -47,6 +56,7 @@ public class TableController {
         return ResponseEntity.ok(updated);
     }
 
+    // Xóa mềm bàn
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<RestaurantTableDTO> deleteTable(@PathVariable Long id){

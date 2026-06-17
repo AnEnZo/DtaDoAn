@@ -13,8 +13,9 @@ public class TableMapper {
     public static RestaurantTable toEntity(RestaurantTableDTO dto) {
         RestaurantTable table = new RestaurantTable();
         table.setName(dto.getName());
-        table.setAvailable(dto.getAvailable());
-        table.setCapacity(dto.getCapacity());
+        // available is optional on input (defaults to true); guard against unboxing null
+        table.setAvailable(dto.getAvailable() != null ? dto.getAvailable() : true);
+        table.setCapacity(dto.getCapacity() != null ? dto.getCapacity() : 0);
         table.setId(dto.getId());
         return table;
     }

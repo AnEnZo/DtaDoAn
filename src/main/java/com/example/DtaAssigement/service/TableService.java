@@ -8,8 +8,8 @@ import java.util.List;
 public interface TableService {
     List<RestaurantTableDTO> getAllTables();
     RestaurantTableDTO createTable(RestaurantTableDTO tableDTO);
+    RestaurantTableDTO updateTable(Long id, RestaurantTableDTO tableDTO);
     RestaurantTable updateTableStatus(Long id, boolean available);
     boolean deleteTable(Long id);
-    ;
     List<RestaurantTableDTO> getListAvailableTables();
 }

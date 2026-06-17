@@ -27,5 +27,9 @@ public class RestaurantTable {
 
     private int capacity;
 
+    // Soft-delete flag: deleted tables are hidden from listings but kept for history/FK integrity.
+    // columnDefinition adds a DB default so adding this NOT NULL column to existing rows succeeds.
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean deleted = false;
 
 }

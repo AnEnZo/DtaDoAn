@@ -34,8 +34,8 @@ public class DashboardController {
         long ordersToday = orderService.countOrdersToday();
         long pendingOrders = orderService.countPendingOrders();
 
-        long totalTables = tableRepo.count();
-        long availableTables = tableRepo.countByAvailableTrue();
+        long totalTables = tableRepo.countByDeletedFalse();
+        long availableTables = tableRepo.countByAvailableTrueAndDeletedFalse();
         long tablesInUse = totalTables - availableTables;
         double utilizationPct = totalTables > 0 ? (tablesInUse * 100.0 / totalTables) : 0.0;
 
