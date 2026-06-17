@@ -238,6 +238,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(User user, String rawPassword) {
+        if (passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu mới không được trùng với mật khẩu cũ");
+        }
         user.setPassword(passwordEncoder.encode(rawPassword));
         userRepository.save(user);
     }

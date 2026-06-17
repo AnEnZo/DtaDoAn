@@ -181,8 +181,6 @@ Hệ thống backend được xây dựng theo kiến trúc MVC
 cấp các RESTful API có cấu trúc rõ ràng, phục vụ giao tiếp giữa tầng
 giao diện và tầng dữ liệu.
 
-#### s {#s .unnumbered}
-
 #### 2.2.2. PostgreSQL {#postgresql .unnumbered}
 
 PostgreSQL là hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở, được lựa
@@ -191,8 +189,6 @@ các kiểu dữ liệu phong phú và cơ chế ràng buộc toàn vẹn dữ l
 chẽ. PostgreSQL phù hợp với yêu cầu lưu trữ và truy vấn dữ liệu có cấu
 trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho hệ thống.
 
-###  {#section .unnumbered}
-
 ## CHƯƠNG 3: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG {#chương-3-phân-tích-và-thiết-kế-hệ-thống .unnumbered}
 
 ### 3.1. Khảo sát hệ thống
@@ -200,7 +196,13 @@ trúc phức tạp, đảm bảo tính nhất quán và độ tin cậy cao cho 
 #### 3.1.1. Giới thiệu đơn vị khảo sát
 - **Đơn vị khảo sát:** Quán cafe THECOFFEE247.
 - **Hoạt động:** Phục vụ khách hàng với đa dạng các loại đồ uống, cafe và đặc biệt là các món ăn "hot trend" hiện tại. Hoạt động từ sớm đến tối muộn, phục vụ khách hàng dùng tại chỗ và mang đi.
-- **Quy mô:** Không gian thiết kế thoải mái, chia thành nhiều khu vực bàn phục vụ, phù hợp với mọi lứa tuổi khách hàng.
+- **Quy mô hoạt động:**
+  - **Diện tích & Thiết kế:** Tổng diện tích mặt bằng khoảng 100m² bao gồm 2 tầng trong nhà .
+  - **Sức chứa:** Đảm bảo phục vụ tối đa từ 30 đến 50 khách hàng cùng một thời điểm.
+  - **Cơ cấu bàn phục vụ:** Tổng cộng 20 bàn phục vụ được phân chia thành 3 khu vực chính (Khu vực Tầng 1, Khu vực Tầng 2 và Khu vực Ngoài trời).
+  - **Nhân sự cửa hàng:** Đội ngũ gồm 7 nhân viên xoay ca linh hoạt, bao gồm: 01 Quản lý cửa hàng phụ trách điều hành chung, 01 Thu ngân trực tại quầy, 02 Nhân viên pha chế chuyên nghiệp, 02 Nhân viên phục vụ bàn, và 01 Nhân viên bảo vệ phụ trách giữ xe và hỗ trợ dắt xe cho khách.
+  - **Lượng khách hàng phục vụ:** Trung bình quán tiếp đón từ 150 đến 200 lượt khách mỗi ngày thường. Vào các ngày cuối tuần, ngày lễ hoặc các khung giờ cao điểm (sáng từ 7h00 - 9h00, tối từ 19h00 - 21h00), lượng khách có thể đạt từ 200 đến 300 lượt khách/ngày.
+  - **Doanh thu trung bình:** Dao động trong khoảng từ 5.000.000 VNĐ đến 10.000.000 VNĐ/ngày.
 
 #### 3.1.2. Khảo sát quy trình của cửa hàng
 THECOFFEE247 là đơn vị kinh doanh dịch vụ F&B (Ăn uống) với danh mục sản phẩm phong phú. Hoạt động bán hàng được triển khai linh hoạt qua hình thức bán trực tiếp tại quầy, phục vụ tại bàn và hỗ trợ mua mang đi (Takeaway). Về phương thức thanh toán, quán hỗ trợ đa dạng từ tiền mặt, thanh toán động qua mã QR (dynamic QR Momo), và thanh toán thẻ qua Paypal, đảm bảo tính thuận tiện, nhanh chóng. Tuy nhiên, sự phối hợp giữa bộ phận order, pha chế và thu ngân vào giờ cao điểm cần được tối ưu thông qua phần mềm để tránh sai sót và quá tải.
@@ -238,25 +240,59 @@ Người được phỏng vấn: Lê Tuấn Anh
 | 2 | Anh/chị theo dõi doanh thu và số lượng đơn hàng trong ngày bằng cách nào? | Hiện tại chủ yếu theo dõi doanh số và đơn hàng qua sổ sách và tổng kết cuối ngày, đôi khi gặp sai sót nếu lượng đơn quá lớn. | |
 | 3 | Nếu được xây dựng một phần mềm quản lý mới, anh/chị mong muốn có những tính năng gì? | Chúng tôi cần một hệ thống quản lý có thể tối ưu việc order từ bàn đến quầy pha chế, tích hợp sẵn các phương thức thanh toán Momo/Paypal, đảm bảo bảo mật và cung cấp các báo cáo thống kê doanh thu theo ngày, tháng, năm để nắm bắt tình hình và đưa ra chiến lược kinh doanh. | |
 
-#### 3.1.3. Mô tả bài toán và lên kế hoạch cho dự án
-##### 3.1.3.1. Mô tả về hệ thống cần xây dựng
-**a. Đánh giá ưu nhược điểm của việc quản lý truyền thống**
+#### 3.1.3. Phân tích hiện trạng và Xác định bài toán
+
+##### 3.1.3.1. Khảo sát hiện trạng và quy trình thực tế
+**Mô tả nghiệp vụ thực tế (Hiện trạng thô sơ khi chưa áp dụng phần mềm):**
+Trước khi triển khai dự án website quản lý, quán cafe THECOFFEE247 vận hành dựa trên các phương thức thủ công, sử dụng giấy tờ và sổ sách truyền thống, dẫn đến quy trình nghiệp vụ còn thô sơ và bộc lộ nhiều hạn chế:
+- **Nghiệp vụ Quản lý Thực đơn (Menu):** Thực đơn được in sẵn dưới dạng menu giấy cố định dán tại quầy hoặc để tại bàn, một số món đặc biệt được viết lên bảng phấn. Khi thay đổi giá bán hoặc hết nguyên liệu tạm thời, quản lý phải gạch xóa trực tiếp trên giấy hoặc viết lại bảng phấn thủ công, gây mất thẩm mỹ và thiếu chuyên nghiệp. Việc cập nhật các món ăn "hot trend" hoàn toàn phụ thuộc vào sự nhạy bén và quan sát thủ công của chủ quán thông qua các trang mạng xã hội cá nhân, không có công cụ hỗ trợ tự động thu thập hay phân tích xu hướng.
+- **Nghiệp vụ Quản lý Bàn và Gọi món (Order):** Khi khách vào bàn, nhân viên phục vụ sử dụng sổ tay và bút để ghi lại danh sách món. Quy trình này dễ dẫn đến sai sót do chữ viết tay khó đọc hoặc nhân viên nghe nhầm yêu cầu của khách (như ghi chú về đá, đường, mang về). Việc theo dõi bàn trống cũng được nhân viên quan sát bằng mắt thường, không có sơ đồ trực quan, gây khó khăn vào giờ cao điểm khi khách ra vào liên tục.
+- **Nghiệp vụ Quản lý Khách hàng & Tích điểm:** Cửa hàng sử dụng voucher in ra giấy để phát cho khách, không có nghiệp vụ tích điểm cho khách hàng.
+- **Nghiệp vụ Quản lý Khuyến mãi & Voucher:** Các chương trình giảm giá được áp dụng thủ công. Thu ngân phải tự nhớ các chương trình đang chạy, tự tính toán số tiền giảm giá bằng máy tính cầm tay rồi trừ vào hóa đơn. Việc này rất dễ gây nhầm lẫn, làm thất thoát doanh thu hoặc tính sai tiền cho khách hàng.
+- **Nghiệp vụ Xử lý Thanh toán:** 
+  - **Tiền mặt:** Thu ngân đếm tiền và thối tiền thủ công, dễ xảy ra sai sót khi quán quá đông.
+  - **Chuyển khoản qua ngân hàng:** Quán sử dụng một mã QR tài khoản tĩnh dán tại quầy. Khách quét mã phải tự nhập số tiền cần chuyển. Sau khi khách chuyển khoản xong, thu ngân phải yêu cầu khách đưa màn hình điện thoại chụp lại biên lai đối chiếu. Quy trình này tốn nhiều thời gian, làm ùn tắc hàng dài khách chờ và dễ bị kẻ gian lợi dụng biên lai chuyển tiền giả mạo.
+- **Nghiệp vụ Báo cáo & Thống kê:** Cuối mỗi ngày, thu ngân thu thập toàn bộ hóa đơn/giấy order trong ngày, sử dụng máy tính Casio để cộng dồn doanh thu, đếm tiền mặt thực tế trong két và đối chiếu với sổ ghi chép. Quy trình này mất từ 1 - 2 tiếng sau giờ đóng cửa, dễ xảy ra sai lệch số liệu do ghi chép thiếu hoặc mất phiếu order.
+
+**Quy trình vận hành thực tế (Khi chưa áp dụng phần mềm):**
+Quy trình vận hành thực tế tại quán cafe THECOFFEE247 trước khi áp dụng phần mềm quản lý diễn ra hoàn toàn thủ công, cụ thể như sau:
+- **a. Quy trình Phục vụ Khách dùng tại chỗ :**
+  1. **Đón khách:** Khách vào quán tự tìm bàn trống hoặc nhân viên phục vụ chỉ bàn bằng mắt thường.
+  2. **Ghi Order:** Nhân viên phục vụ mang menu giấy ra bàn, đợi khách chọn món và dùng bút ghi lại tên món, số lượng vào cuống sổ order giấy.
+  3. **Chuyển Order xuống bếp:** Nhân viên phục vụ xé tờ giấy order, đi bộ đến quầy pha chế và ghim phiếu vào thanh kẹp.
+  4. **Pha chế:** Nhân viên pha chế đọc phiếu giấy và làm đồ uống theo thứ tự. Nếu phiếu bị ướt, mất chữ hoặc nhân viên viết ngoáy, pha chế phải gọi phục vụ lại để xác nhận lại món.
+  5. **Trả đồ:** Sau khi làm xong, pha chế bấm chuông để nhân viên phục vụ tự nhận diện đồ của bàn mình và bê ra cho khách.
+  6. **Thanh toán:** Khi khách yêu cầu tính tiền, nhân viên phục vụ ghi phiếu tính tiền tay hoặc báo thu ngân cộng dồn các món từ phiếu order ban đầu. Thu ngân tính tổng tiền bằng máy tính cầm tay, thu tiền mặt hoặc hướng dẫn quét QR tĩnh. Sau khi nhận đủ tiền, thu ngân gạch chéo phiếu order coi như hoàn thành. Quy trình không có hóa đơn in sẵn chuyên nghiệp.
+- **b. Quy trình Phục vụ Khách mua mang đi :**
+  1. **Gọi món tại quầy:** Khách hàng xếp hàng tại quầy và gọi món trực tiếp với thu ngân.
+  2. **Ghi nhận & Tính tiền:** Thu ngân ghi món ra phiếu giấy, tính tiền thủ công và thu tiền của khách tại chỗ. Nếu khách chuyển khoản ngân hàng qua mã QR tĩnh, thu ngân phải chờ xác nhận từ chủ quán mới được duyệt làm đồ.
+  3. **Chuyển thông tin cho pha chế:** Thu ngân chuyển tờ phiếu order giấy sang cho nhân viên pha chế bên cạnh.
+  4. **Chờ nhận đồ:** Khách hàng đứng đợi xung quanh khu vực quầy bar. Pha chế chuẩn bị xong đồ uống, đóng gói và gọi tên món để khách tự lại nhận.
+- **c. Quy trình Tích điểm & Khuyến mãi thủ công :**
+  1. **Yêu cầu tích điểm:** Khi thanh toán, khách hàng xuất trình thẻ tích điểm bằng giấy.
+  2. **Đóng dấu thẻ:** Thu ngân dùng con dấu mực đỏ đóng số lượng dấu tương ứng với số ly nước khách mua lên thẻ giấy.
+  3. **Đổi thưởng:** Khi khách hàng tích đủ 10 dấu, thu ngân thu lại thẻ cũ và tặng khách 1 ly nước miễn phí trong đơn hàng hiện tại, sau đó ghi chú lại vào sổ tay thu chi của quán.
+
+**Đánh giá ưu nhược điểm của việc quản lý truyền thống:**
 - **Ưu điểm:** Chi phí thấp ban đầu, dễ triển khai, nhân viên quen thuộc với việc ghi chép.
 - **Nhược điểm:** Tốn thời gian & dễ sai sót khi nhập liệu, lên đơn chậm vào giờ cao điểm, khó kiểm soát trạng thái các bàn (bàn trống/bàn có khách), và báo cáo doanh thu cuối ngày mất nhiều thời gian tổng hợp.
 
-**b. Nhu cầu phát triển phần mềm quản lý thay thế**
+##### 3.1.3.2. Nhu cầu và Phát biểu bài toán
+**Nhu cầu phát triển phần mềm quản lý thay thế:**
 - Tối ưu hóa quy trình order tại bàn và takeaway.
 - Hỗ trợ đa dạng phương thức thanh toán như tiền mặt, mã QR Momo (dynamic QR) và Paypal để tiết kiệm thời gian.
 - Phân quyền & Bảo mật hệ thống giữa Quản lý và Nhân viên.
 - Báo cáo & Phân tích thông minh doanh thu, đơn hàng theo ngày/tháng/năm.
 
-**c. Phát biểu bài toán**
+**Phát biểu bài toán:**
 Xây dựng một hệ thống website quản lý quán cafe THECOFFEE247 và tìm kiếm món ăn hot trend.
 - **Khách hàng:** Tìm kiếm thông tin sản phẩm, xem menu (cafe, đồ ăn hot trend), xem thông tin liên hệ.
 - **Nhân viên:** Tạo và quản lý đơn hàng cho khách tại quầy (dùng tại chỗ, mang về), thêm món, cập nhật số lượng, in hóa đơn, xử lý thanh toán (tiền mặt, Momo, Paypal).
 - **Quản lý:** Quản lý tài khoản, thêm/sửa/xóa thông tin sản phẩm/cấu hình/danh mục, quản lý bàn, theo dõi trạng thái, tạo khuyến mãi/voucher và xem báo cáo thống kê doanh thu.
 
-##### 3.1.3.2. Đề xuất chức năng cho hệ thống
+#### 3.1.4. Yêu cầu hệ thống đề xuất
+
+##### 3.1.4.1. Đề xuất chức năng cho hệ thống (Functional Requirements)
 Hệ thống website quản lý THECOFFEE247 dự kiến có các chức năng sau:
 - **Chức năng 1:** Quản lý nhập xuất tài khoản (Đăng nhập, đăng xuất, đăng ký).
 - **Chức năng 2:** Quản lý người dùng (Quản lý tài khoản nhân viên/khách hàng).
@@ -268,9 +304,45 @@ Hệ thống website quản lý THECOFFEE247 dự kiến có các chức năng s
 - **Chức năng 8:** Quản lý khuyến mãi/Voucher.
 - **Chức năng 9:** Thống kê doanh thu (Theo ngày, tháng, năm).
 
-### 3.2. Sơ đồ Use Case (Tình huống sử dụng) {#sơ-đồ-use-case-tình-huống-sử-dụng .unnumbered}
+##### 3.1.4.2. Yêu cầu phi chức năng của hệ thống (Non-Functional Requirements)
+Để đảm bảo hệ thống vận hành ổn định, an toàn và đem lại trải nghiệm tốt nhất cho người dùng, hệ thống phải đáp ứng các tiêu chuẩn phi chức năng sau:
+- **a. Yêu cầu về Hiệu năng (Performance Requirements):**
+  - **Thời gian phản hồi:** Thời gian phản hồi của hệ thống đối với các tác vụ thông thường (truy vấn danh sách món, thêm món vào giỏ hàng, chuyển trạng thái bàn) phải dưới 1.5 giây. Đối với các tác vụ xử lý thanh toán trực tuyến hoặc gọi API bên thứ ba (Momo, Paypal), thời gian phản hồi không quá 3 giây.
+  - **Khả năng chịu tải:** Hệ thống có khả năng hỗ trợ tối thiểu 500 người dùng truy cập và thao tác đồng thời (concurrent users) trong các khung giờ cao điểm mà không xảy ra hiện tượng nghẽn mạng hay treo máy chủ.
+- **b. Yêu cầu về Bảo mật (Security Requirements):**
+  - **Mã hóa dữ liệu:** Mật khẩu của người dùng bắt buộc phải được mã hóa bằng thuật toán băm mạnh BCrypt trước khi lưu trữ vào cơ sở dữ liệu PostgreSQL.
+  - **Giao thức an toàn:** Toàn bộ giao tiếp dữ liệu giữa phía máy khách (Frontend Next.js) và máy chủ (Backend Spring Boot) phải được thực hiện qua giao thức bảo mật HTTPS để chống nghe lén và giả mạo gói tin.
+  - **Phân quyền truy cập (RBAC):** Hệ thống phân quyền chặt chẽ dựa trên vai trò của tài khoản:
+    - **Nhân viên:** Chỉ được truy cập các tính năng xem bàn, gọi món, in hóa đơn, và cập nhật thông tin cá nhân.
+    - **Quản lý (Admin):** Có toàn quyền quản lý danh mục, thực đơn, voucher, nhân sự, xem biểu đồ báo cáo doanh thu và cấu hình hệ thống.
+  - **Quản lý phiên làm việc:** Sử dụng cơ chế xác thực JWT (JSON Web Token) để quản lý phiên đăng nhập an toàn, token có thời hạn sử dụng hợp lý và được lưu trữ an toàn ở Client (HttpOnly Cookie hoặc LocalStorage tùy theo mức độ nhạy cảm của tác vụ).
+- **c. Yêu cầu về Độ tin cậy & Tính khả dụng (Reliability & Availability):**
+  - **Thời gian hoạt động (Uptime):** Hệ thống phải đảm bảo hoạt động liên tục 24/7 với tỷ lệ sẵn sàng đạt tối thiểu 99.9%.
 
-#### 3.2.1. Use Case Tổng quan {#use-case-tổng-quan .unnumbered}
+#### 3.1.4.3. Kế hoạch thực hiện
+
+| TT | Nội dung thực hiện | Thời gian | Kết quả dự kiến |
+| :---: | :--- | :---: | :--- |
+| **1** | Xây dựng đề cương chi tiết | 17/03 - 25/03 | Đề cương chi tiết |
+| **2** | Tìm hiểu về Cơ sở lý thuyết và công cụ sử dụng | 26/03 - 10/04 | Báo cáo kết quả tìm hiểu về Cơ sở lý thuyết và công cụ sử dụng |
+| **3** | Khảo sát thực tế tại quán cafe THECOFFEE247 và phân tích nghiệp vụ | 11/04 - 17/04 | Báo cáo kết quả khảo sát và phân tích nghiệp vụ |
+| **4** | Phân tích và thiết kế hệ thống | 18/04 - 25/04 | - Hoàn thành các yêu cầu hệ thống, các biểu đồ Use Case, biểu đồ lớp, biểu đồ hoạt động,...<br>- Đặc tả Use Case từ giao diện của các tác vụ.<br>- Xây dựng cơ sở dữ liệu và nhập dữ liệu. |
+| **5** | Lập trình | 26/04 - 20/05 | Xây dựng phần mềm ứng dụng hoàn chỉnh |
+| **6** | Hoàn thành báo cáo | 21/05 - 31/05 | Hoàn thành bản báo cáo chi tiết đồ án tốt nghiệp |
+
+
+
+### 3.2. Sơ đồ Use Case (Tình huống sử dụng) {#sơ-đồ-use-case-tình-huống-sử-dụng}
+
+Hệ thống được thiết kế phục vụ cho ba tác nhân (actors) tương tác trực tiếp với các chức năng của ứng dụng. Dưới đây là bảng tổng hợp thông tin chi tiết về các tác nhân trong hệ thống:
+
+| STT | Tên tác nhân | Mô tả vai trò | Quyền hạn & Tác vụ chính |
+| :---: | :--- | :--- | :--- |
+| **1** | **Khách hàng** | Người sử dụng dịch vụ tại quán cafe. Có thể tự xem thực đơn trực tuyến, tham gia chương trình tích điểm đổi voucher và tương tác với hệ thống. | - Đăng ký, đăng nhập tài khoản khách hàng.<br>- Xem thực đơn của quán.<br>- Gửi đề xuất món ăn, gửi liên hệ góp ý.<br>- Tích điểm thưởng và đổi điểm lấy voucher cá nhân. |
+| **2** | **Nhân viên** | Nhân viên phục vụ hoặc thu ngân của quán cafe. Vận hành trực tiếp các tác vụ liên quan đến chọn bàn, cập nhật món và thanh toán tại quầy. | - Xem trạng thái bàn ăn (trống, có khách).<br>- Tạo đơn hàng, xem/thêm/xóa món ăn cho đơn của bàn.<br>- Áp dụng voucher, tích điểm cho khách hàng qua số điện thoại.<br>- Chọn phương thức thanh toán và xuất hóa đơn. |
+| **3** | **Người quản lý** | Chủ quán hoặc người điều hành hệ thống. Có quyền hạn cao nhất trong việc quản lý cấu hình, dữ liệu nhân sự, thực đơn và báo cáo doanh thu. | - Quản lý bàn ăn, danh mục món ăn và thực đơn.<br>- Quản lý các chương trình khuyến mãi, voucher toàn hệ thống.<br>- Quản lý tài khoản người dùng (Nhân viên & Khách hàng).<br>- Theo dõi biểu đồ thống kê doanh thu và tham khảo gợi ý xu hướng món ăn từ AI. |
+
+#### 3.2.1. Use Case Tổng quan {#use-case-tổng-quan}
 
 ```plantuml
 @startuml
@@ -283,7 +355,7 @@ skinparam nodesep 8
 skinparam ranksep 12
 left to right direction
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 QL -[hidden]left-> NV
 
 rectangle "Hệ thống Quản lý Quán Cafe" {
@@ -401,14 +473,13 @@ skinparam defaultFontName "Arial"
 left to right direction
 actor "Khách hàng" as KH
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Đăng nhập hệ thống" as UC01
 
 KH --> UC01
 NV --> UC01
+QL --> UC01
 @enduml
 ```
 
@@ -463,14 +534,13 @@ skinparam defaultFontName "Arial"
 left to right direction
 actor "Khách hàng" as KH
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Đăng ký tài khoản" as UC02
 
 KH --> UC02
 NV --> UC02
+QL --> UC02
 @enduml
 ```
 
@@ -521,15 +591,14 @@ skinparam defaultFontName "Arial"
 left to right direction
 actor "Khách hàng" as KH
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Quên mật khẩu" as UC03
 usecase "Xác thực OTP Email" as UC04
 
 KH --> UC03
 NV --> UC03
+QL --> UC03
 UC03 .> UC04 : <<include>>
 @enduml
 ```
@@ -582,14 +651,13 @@ skinparam defaultFontName "Arial"
 left to right direction
 actor "Khách hàng" as KH
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Xác thực OTP Email" as UC04
 
 KH --> UC04
 NV --> UC04
+QL --> UC04
 @enduml
 ```
 
@@ -641,9 +709,7 @@ left to right direction
 
 actor "Khách hàng" as KH
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Quản lý thông tin cá nhân" as UC05
 usecase "Đăng nhập hệ thống" as UC01
@@ -651,6 +717,7 @@ usecase "Xác thực OTP Email" as UC04
 
 KH --> UC05
 NV --> UC05
+QL --> UC05
 UC05 ..> UC01 : <<include>>
 UC05 ..> UC04 : <<include>>
 @enduml
@@ -703,14 +770,13 @@ UC05 ..> UC04 : <<include>>
 skinparam defaultFontName "Arial"
 left to right direction
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Xem trạng thái Bàn" as UC06
 usecase "Đăng nhập hệ thống" as UC01
 
 NV --> UC06
+QL --> UC06
 UC06 .> UC01 : <<include>>
 @enduml
 ```
@@ -755,7 +821,7 @@ UC06 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Thêm Bàn" as UC07
 usecase "Đăng nhập hệ thống" as UC01
@@ -795,7 +861,7 @@ UC07 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Sửa Bàn" as UC08
 usecase "Đăng nhập hệ thống" as UC01
@@ -835,7 +901,7 @@ UC08 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Xóa Bàn" as UC09
 usecase "Đăng nhập hệ thống" as UC01
@@ -870,22 +936,27 @@ UC09 .> UC01 : <<include>>
   **Quy tắc kinh doanh**              Không xóa bàn đang OCCUPIED.
   -----------------------------------------------------------------------
 
-**UC10 -- Tạo đơn hàng cho khách**
+**UC10 -- Quản lý đơn hàng**
 
 ```plantuml
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
-QL --|> NV
-
-usecase "Tạo đơn hàng cho khách" as UC10
+usecase "Quản lý đơn hàng" as UC10
+usecase "Thêm đơn hàng" as UC10_1
+usecase "Sửa đơn hàng" as UC10_2
+usecase "Xóa đơn hàng" as UC10_3
 usecase "Xem và thêm/xóa món cho đơn của bàn" as UC11
 usecase "Đăng nhập hệ thống" as UC01
 
 NV --> UC10
+QL --> UC10
+UC10 <.. UC10_1 : <<extend>>
+UC10 <.. UC10_2 : <<extend>>
+UC10 <.. UC10_3 : <<extend>>
 UC10 .> UC11 : <<include>>
 UC10 .> UC01 : <<include>>
 @enduml
@@ -896,32 +967,30 @@ UC10 .> UC01 : <<include>>
   ----------------------------------- -----------------------------------
   **Use Case ID**                     UC10
 
-  **Tên Use Case**                    Tạo đơn hàng cho khách
+  **Tên Use Case**                    Quản lý đơn hàng
 
   **Actor**                           Nhân viên, Quản lý
 
-  **Mô tả**                           Tạo đơn hàng mới cho khách, chọn
-                                      hình thức phục vụ (dùng tại bàn
-                                      hoặc mang về)
+  **Mô tả**                           Cho phép nhân viên và quản lý thực hiện
+                                      các thao tác quản lý đơn hàng bao gồm
+                                      thêm, sửa, và xóa đơn hàng.
 
-  **Tiền điều kiện**                  Nhân viên đã đăng nhập; nếu dùng
-                                      tại bàn phải có bàn trống
+  **Tiền điều kiện**                  Nhân viên hoặc Quản lý đã đăng nhập
 
-  **Hậu điều kiện**                   Đơn hàng tạo với trạng thái
-                                      PENDING, bàn (nếu có) chuyển sang
-                                      OCCUPIED
+  **Hậu điều kiện**                   Đơn hàng được thêm, sửa, hoặc xóa
+                                      thành công trong hệ thống
 
-  **Luồng chính**                     1\. Chọn hình thức: "Dùng tại bàn"
-                                      hoặc "Mang về". 2. Nếu tại bàn:
-                                      chọn bàn trống. 3. Hệ thống tạo đơn
-                                      hàng. 4. Giao diện hiển thị đơn để
-                                      thêm món (include UC11).
+  **Luồng chính**                     1\. Chọn chức năng quản lý đơn hàng.
+                                      2. Hệ thống hiển thị các tùy chọn thao tác.
+                                      3. Người dùng chọn một trong các thao tác:
+                                         - Thêm đơn hàng mới (extend UC10_1).
+                                         - Sửa thông tin đơn hàng (extend UC10_2).
+                                         - Xóa/hủy đơn hàng (extend UC10_3).
 
-  **Luồng thay thế / Ngoại lệ**       \[A1\] Không có bàn trống: Cảnh
-                                      báo, nhắc chọn Mang về.
+  **Luồng thay thế / Ngoại lệ**       \[A1\] Hủy đơn hàng đang xử lý: 
+                                      Yêu cầu xác nhận từ quản lý.
 
-  **Quy tắc kinh doanh**              Mỗi bàn chỉ có tối đa một đơn hàng
-                                      đang mở cùng lúc.
+  **Quy tắc kinh doanh**              Chỉ được xóa/hủy các đơn hàng chưa thanh toán.
   -----------------------------------------------------------------------
 
 **UC11 -- Xem và thêm/xóa món cho đơn của bàn**
@@ -931,15 +1000,14 @@ UC10 .> UC01 : <<include>>
 skinparam defaultFontName "Arial"
 left to right direction
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Xem và thêm/xóa món cho đơn của bàn" as UC11
 usecase "Xem trạng thái Bàn" as UC06
 usecase "Đăng nhập hệ thống" as UC01
 
 NV --> UC11
+QL --> UC11
 UC11 .> UC06 : <<extend>>
 UC11 .> UC01 : <<include>>
 @enduml
@@ -978,22 +1046,27 @@ UC11 .> UC01 : <<include>>
                                       tối thiểu là 1.
   -----------------------------------------------------------------------
 
-**UC12 -- Tạo hóa đơn cho khách**
+**UC12 -- Quản lý hóa đơn**
 
 ```plantuml
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
-QL --|> NV
-
-usecase "Tạo hóa đơn cho khách" as UC12
+usecase "Quản lý hóa đơn" as UC12
+usecase "Tạo hóa đơn" as UC12_1
+usecase "Xem hóa đơn" as UC12_2
+usecase "Hủy hóa đơn" as UC12_3
 usecase "Chọn phương thức thanh toán" as UC13
 usecase "Đăng nhập hệ thống" as UC01
 
 NV --> UC12
+QL --> UC12
+UC12 <.. UC12_1 : <<extend>>
+UC12 <.. UC12_2 : <<extend>>
+UC12 <.. UC12_3 : <<extend>>
 UC12 .> UC13 : <<include>>
 UC12 .> UC01 : <<include>>
 @enduml
@@ -1004,30 +1077,31 @@ UC12 .> UC01 : <<include>>
   ----------------------------------- -----------------------------------
   **Use Case ID**                     UC12
 
-  **Tên Use Case**                    Tạo hóa đơn cho khách
+  **Tên Use Case**                    Quản lý hóa đơn
 
   **Actor**                           Nhân viên, Quản lý
 
-  **Mô tả**                           Khởi tạo hóa đơn từ đơn hàng, tính
-                                      tổng tiền và chuẩn bị thanh toán
+  **Mô tả**                           Cho phép nhân viên và quản lý thực hiện
+                                      các thao tác quản lý hóa đơn bao gồm
+                                      tạo, xem và hủy hóa đơn.
 
-  **Tiền điều kiện**                  Đơn hàng có ít nhất một món ở trạng
-                                      thái PENDING/PREPARING
+  **Tiền điều kiện**                  Nhân viên hoặc Quản lý đã đăng nhập
 
-  **Hậu điều kiện**                   Hóa đơn tạo với trạng thái PENDING,
-                                      sẵn sàng thanh toán
+  **Hậu điều kiện**                   Hóa đơn được tạo, xem hoặc hủy thành công
 
-  **Luồng chính**                     1\. Nhấn "Thanh toán" trên đơn
-                                      hàng. 2. Hệ thống tính tổng tiền.
-                                      3. Hiển thị màn hình hóa đơn. 4.
-                                      Xác nhận và chọn phương thức thanh
-                                      toán (include UC13).
+  **Luồng chính**                     1\. Chọn chức năng quản lý hóa đơn.
+                                      2. Hệ thống hiển thị các tùy chọn thao tác.
+                                      3. Người dùng chọn một trong các thao tác:
+                                         - Tạo hóa đơn mới (extend UC12_1).
+                                         - Xem chi tiết hóa đơn (extend UC12_2).
+                                         - Hủy hóa đơn (extend UC12_3).
 
-  **Luồng thay thế / Ngoại lệ**       \[A1\] Đơn không có món: Không cho
-                                      phép tạo hóa đơn.
+  **Luồng thay thế / Ngoại lệ**       \[A1\] Đơn hàng không hợp lệ hoặc không có món:
+                                      Không cho phép tạo hóa đơn.
 
   **Quy tắc kinh doanh**              Tổng tiền = Tổng giá món × số lượng
-                                      − Giảm giá voucher (nếu có).
+                                      − Giảm giá voucher (nếu có). Chỉ được
+                                      hủy các hóa đơn chưa thanh toán.
   -----------------------------------------------------------------------
 
 **UC13 -- Chọn phương thức thanh toán**
@@ -1038,15 +1112,14 @@ skinparam defaultFontName "Arial"
 left to right direction
 actor "Khách hàng" as KH
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Chọn phương thức thanh toán" as UC13
 usecase "Đăng nhập hệ thống" as UC01
 
 KH --> UC13
 NV --> UC13
+QL --> UC13
 UC13 ..> UC01 : <<include>>
 @enduml
 ```
@@ -1092,15 +1165,14 @@ skinparam defaultFontName "Arial"
 left to right direction
 actor "Khách hàng" as KH
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Nhập Voucher của khách và áp dụng" as UC14
 usecase "Đăng nhập hệ thống" as UC01
 
 KH --> UC14
 NV --> UC14
+QL --> UC14
 UC14 ..> UC01 : <<include>>
 @enduml
 ```
@@ -1145,13 +1217,12 @@ UC14 ..> UC01 : <<include>>
 skinparam defaultFontName "Arial"
 left to right direction
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Nhập số điện thoại tích điểm" as UC15
 usecase "Đăng nhập hệ thống" as UC01
 NV --> UC15
+QL --> UC15
 UC15 ..> UC01 : <<include>>
 @enduml
 ```
@@ -1195,15 +1266,14 @@ UC15 ..> UC01 : <<include>>
 skinparam defaultFontName "Arial"
 left to right direction
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Xuất Hóa đơn" as UC16
 usecase "Xem Lịch sử Hóa đơn" as UC17
 usecase "Đăng nhập hệ thống" as UC01
 
 NV --> UC16
+QL --> UC16
 UC16 .> UC17 : <<extend>>
 UC16 .> UC01 : <<include>>
 @enduml
@@ -1245,15 +1315,14 @@ UC16 .> UC01 : <<include>>
 skinparam defaultFontName "Arial"
 left to right direction
 actor "Nhân viên" as NV
-actor "Quản lý" as QL
-
-QL --|> NV
+actor "Người quản lý" as QL
 
 usecase "Xem Lịch sử Hóa đơn" as UC17
 usecase "Xuất Hóa đơn" as UC16
 usecase "Đăng nhập hệ thống" as UC01
 
 NV --> UC17
+QL --> UC17
 UC16 .> UC17 : <<extend>>
 UC17 .> UC01 : <<include>>
 @enduml
@@ -1294,18 +1363,24 @@ UC17 .> UC01 : <<include>>
 
 #### 3.2.4. Use Case Chi tiết - Quản lý Hệ thống {#use-case-chi-tiết---quản-lý-hệ-thống .unnumbered}
 
-**UC18 -- Thêm Voucher**
+**UC18 -- Quản lý Voucher**
 
 ```plantuml
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
-usecase "Thêm Voucher" as UC18
+usecase "Quản lý Voucher" as UC18
+usecase "Thêm Voucher" as UC18_1
+usecase "Sửa Voucher" as UC18_2
+usecase "Xóa Voucher" as UC18_3
 usecase "Đăng nhập hệ thống" as UC01
 
 QL --> UC18
+UC18 <.. UC18_1 : <<extend>>
+UC18 <.. UC18_2 : <<extend>>
+UC18 <.. UC18_3 : <<extend>>
 UC18 .> UC01 : <<include>>
 @enduml
 ```
@@ -1315,20 +1390,28 @@ UC18 .> UC01 : <<include>>
   ----------------------------------- -----------------------------------
   **Use Case ID**                     UC18
 
-  **Tên Use Case**                    Thêm Voucher
+  **Tên Use Case**                    Quản lý Voucher
 
   **Actor**                           Quản lý
 
-  **Mô tả**                           Tạo voucher giảm giá mới trong hệ thống
+  **Mô tả**                           Cho phép quản lý thực hiện các thao tác
+                                      quản lý voucher giảm giá bao gồm thêm,
+                                      sửa, và xóa voucher.
 
-  **Tiền điều kiện**                  Quản lý đã đăng nhập và truy cập
-                                      trang Quản lý Voucher
+  **Tiền điều kiện**                  Quản lý đã đăng nhập vào hệ thống
 
-  **Hậu điều kiện**                   Voucher mới được tạo và hiển thị trong danh sách
+  **Hậu điều kiện**                   Voucher được thêm, sửa, hoặc xóa
+                                      thành công trong hệ thống
 
-  **Luồng chính**                     1. Nhấn "Tạo voucher". 2. Nhập mã, loại, giá trị giảm, điều kiện. 3. Nhấn Xác nhận. 4. Hệ thống tạo voucher mới.
+  **Luồng chính**                     1\. Chọn chức năng quản lý voucher.
+                                      2. Hệ thống hiển thị các tùy chọn thao tác.
+                                      3. Người dùng chọn một trong các thao tác:
+                                         - Thêm voucher mới (extend UC18_1).
+                                         - Sửa thông tin voucher (extend UC18_2).
+                                         - Xóa voucher (extend UC18_3).
 
-  **Luồng thay thế / Ngoại lệ**       \[A1\] Mã voucher trùng: Hiển thị lỗi mã voucher đã tồn tại.
+  **Luồng thay thế / Ngoại lệ**       \[A1\] Mã voucher trùng khi thêm mới:
+                                      Hiển thị thông báo trùng mã voucher.
 
   **Quy tắc kinh doanh**              Mã voucher phải duy nhất. Giá trị giảm phải \> 0.
   -----------------------------------------------------------------------
@@ -1339,7 +1422,7 @@ UC18 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Sửa Voucher" as UC19
 usecase "Đăng nhập hệ thống" as UC01
@@ -1378,7 +1461,7 @@ UC19 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Xóa Voucher" as UC20
 usecase "Đăng nhập hệ thống" as UC01
@@ -1412,18 +1495,24 @@ UC20 .> UC01 : <<include>>
   **Quy tắc kinh doanh**              Voucher đang được dùng không thể xóa.
   -----------------------------------------------------------------------
 
-**UC21 -- Thêm Danh mục**
+**UC21 -- Quản lý Danh mục**
 
 ```plantuml
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
-usecase "Thêm Danh mục" as UC21
+usecase "Quản lý Danh mục" as UC21
+usecase "Thêm Danh mục" as UC21_1
+usecase "Sửa Danh mục" as UC21_2
+usecase "Xóa Danh mục" as UC21_3
 usecase "Đăng nhập hệ thống" as UC01
 
 QL --> UC21
+UC21 <.. UC21_1 : <<extend>>
+UC21 <.. UC21_2 : <<extend>>
+UC21 <.. UC21_3 : <<extend>>
 UC21 .> UC01 : <<include>>
 @enduml
 ```
@@ -1433,20 +1522,28 @@ UC21 .> UC01 : <<include>>
   ----------------------------------- -----------------------------------
   **Use Case ID**                     UC21
 
-  **Tên Use Case**                    Thêm Danh mục
+  **Tên Use Case**                    Quản lý Danh mục
 
   **Actor**                           Quản lý
 
-  **Mô tả**                           Thêm danh mục phân loại món ăn mới
+  **Mô tả**                           Cho phép quản lý thực hiện các thao tác
+                                      quản lý danh mục phân loại món ăn bao gồm
+                                      thêm, sửa, và xóa danh mục.
 
-  **Tiền điều kiện**                  Quản lý đã đăng nhập và truy cập
-                                      trang Quản lý Danh mục
+  **Tiền điều kiện**                  Quản lý đã đăng nhập vào hệ thống
 
-  **Hậu điều kiện**                   Danh mục mới được tạo và hiển thị
+  **Hậu điều kiện**                   Danh mục được thêm, sửa, hoặc xóa
+                                      thành công trong hệ thống
 
-  **Luồng chính**                     1. Nhấn nút thêm danh mục. 2. Nhập tên danh mục. 3. Nhấn Xác nhận. 4. Hệ thống tạo danh mục mới.
+  **Luồng chính**                     1\. Chọn chức năng quản lý danh mục.
+                                      2. Hệ thống hiển thị các tùy chọn thao tác.
+                                      3. Người dùng chọn một trong các thao tác:
+                                         - Thêm danh mục mới (extend UC21_1).
+                                         - Sửa thông tin danh mục (extend UC21_2).
+                                         - Xóa danh mục (extend UC21_3).
 
-  **Luồng thay thế / Ngoại lệ**       \[A1\] Tên danh mục trùng: Hiển thị lỗi danh mục đã tồn tại.
+  **Luồng thay thế / Ngoại lệ**       \[A1\] Tên danh mục trùng khi thêm mới:
+                                      Hiển thị lỗi danh mục đã tồn tại.
 
   **Quy tắc kinh doanh**              Tên danh mục không để trống và phải duy nhất.
   -----------------------------------------------------------------------
@@ -1457,7 +1554,7 @@ UC21 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Sửa Danh mục" as UC22
 usecase "Đăng nhập hệ thống" as UC01
@@ -1496,7 +1593,7 @@ UC22 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Xóa Danh mục" as UC23
 usecase "Đăng nhập hệ thống" as UC01
@@ -1531,18 +1628,24 @@ UC23 .> UC01 : <<include>>
   **Quy tắc kinh doanh**              Không xóa danh mục đang có món ăn.
   -----------------------------------------------------------------------
 
-**UC24 -- Thêm Món ăn**
+**UC24 -- Quản lý Món ăn**
 
 ```plantuml
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Quản lý Món ăn" as UC24
+usecase "Thêm Món ăn" as UC24_1
+usecase "Sửa Món ăn" as UC24_2
+usecase "Xóa Món ăn" as UC24_3
 usecase "Đăng nhập hệ thống" as UC01
 
 QL --> UC24
+UC24 <.. UC24_1 : <<extend>>
+UC24 <.. UC24_2 : <<extend>>
+UC24 <.. UC24_3 : <<extend>>
 UC24 .> UC01 : <<include>>
 @enduml
 ```
@@ -1552,22 +1655,31 @@ UC24 .> UC01 : <<include>>
   ----------------------------------- -----------------------------------
   **Use Case ID**                     UC24
 
-  **Tên Use Case**                    Thêm Món ăn
+  **Tên Use Case**                    Quản lý Món ăn
 
   **Actor**                           Quản lý
 
-  **Mô tả**                           Thêm món ăn mới vào thực đơn
+  **Mô tả**                           Cho phép quản lý thực hiện các thao tác
+                                      quản lý món ăn trong thực đơn bao gồm
+                                      thêm, sửa, và xóa món ăn.
 
-  **Tiền điều kiện**                  Quản lý đã đăng nhập và truy cập
-                                      trang Quản lý Thực đơn
+  **Tiền điều kiện**                  Quản lý đã đăng nhập vào hệ thống
 
-  **Hậu điều kiện**                   Món ăn mới được tạo và hiển thị trong thực đơn
+  **Hậu điều kiện**                   Món ăn được thêm, sửa, hoặc xóa
+                                      thành công trong hệ thống
 
-  **Luồng chính**                     1. Nhấn "Thêm món". 2. Nhập tên, giá, hình ảnh, chọn danh mục. 3. Nhấn Xác nhận. 4. Hệ thống tạo món ăn mới.
+  **Luồng chính**                     1\. Chọn chức năng quản lý món ăn.
+                                      2. Hệ thống hiển thị các tùy chọn thao tác.
+                                      3. Người dùng chọn một trong các thao tác:
+                                         - Thêm món ăn mới (extend UC24_1).
+                                         - Sửa thông tin món ăn (extend UC24_2).
+                                         - Xóa món ăn (extend UC24_3).
 
-  **Luồng thay thế / Ngoại lệ**       \[A1\] Giá tiền không hợp lệ: Hiển thị lỗi validation. \[A2\] Chưa chọn danh mục: Hiển thị lỗi bắt buộc.
+  **Luồng thay thế / Ngoại lệ**       \[A1\] Giá tiền không hợp lệ: Hiển thị lỗi validation.
+                                      \[A2\] Chưa chọn danh mục: Hiển thị lỗi bắt buộc.
 
-  **Quy tắc kinh doanh**              Tên món không để trống. Giá phải \> 0. Mỗi món phải thuộc ít nhất một danh mục.
+  **Quy tắc kinh doanh**              Tên món không để trống. Giá phải \> 0. Mỗi món phải
+                                      thuộc ít nhất một danh mục.
   -----------------------------------------------------------------------
 
 **UC25 -- Sửa Món ăn**
@@ -1576,7 +1688,7 @@ UC24 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Sửa Món ăn" as UC25
 usecase "Đăng nhập hệ thống" as UC01
@@ -1615,7 +1727,7 @@ UC25 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Xóa Món ăn" as UC26
 usecase "Đăng nhập hệ thống" as UC01
@@ -1648,18 +1760,24 @@ UC26 .> UC01 : <<include>>
   **Quy tắc kinh doanh**              Không thể xóa món ăn đang có trong các đơn hàng chưa thanh toán.
   -----------------------------------------------------------------------
 
-**UC27 -- Thêm Người Dùng**
+**UC27 -- Quản lý Người Dùng**
 
 ```plantuml
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
-usecase "Thêm Người Dùng" as UC27
+usecase "Quản lý Người Dùng" as UC27
+usecase "Thêm Người Dùng" as UC27_1
+usecase "Sửa Người Dùng" as UC27_2
+usecase "Vô hiệu hóa Người Dùng" as UC27_3
 usecase "Đăng nhập hệ thống" as UC01
 
 QL --> UC27
+UC27 <.. UC27_1 : <<extend>>
+UC27 <.. UC27_2 : <<extend>>
+UC27 <.. UC27_3 : <<extend>>
 UC27 .> UC01 : <<include>>
 @enduml
 ```
@@ -1669,23 +1787,30 @@ UC27 .> UC01 : <<include>>
   ----------------------------------- -----------------------------------
   **Use Case ID**                     UC27
 
-  **Tên Use Case**                    Thêm Người Dùng
+  **Tên Use Case**                    Quản lý Người Dùng
 
   **Actor**                           Quản lý
 
-  **Mô tả**                           Thêm tài khoản nhân viên mới vào hệ thống
+  **Mô tả**                           Cho phép quản lý thực hiện các thao tác
+                                      quản lý tài khoản người dùng bao gồm
+                                      thêm mới, chỉnh sửa thông tin, và vô hiệu hóa tài khoản.
 
-  **Tiền điều kiện**                  Quản lý đã đăng nhập và truy cập
-                                      trang Quản lý Người Dùng
+  **Tiền điều kiện**                  Quản lý đã đăng nhập vào hệ thống
 
-  **Hậu điều kiện**                   Tài khoản nhân viên mới được tạo
+  **Hậu điều kiện**                   Tài khoản người dùng được thêm, sửa, hoặc
+                                      vô hiệu hóa thành công trong hệ thống
 
-  **Luồng chính**                     1. Nhấn nút thêm người dùng. 2. Nhập tên, email, vai trò (role). 3. Nhấn Xác nhận. 4. Hệ thống tạo tài khoản nhân viên.
+  **Luồng chính**                     1\. Chọn chức năng quản lý người dùng.
+                                      2. Hệ thống hiển thị các tùy chọn thao tác.
+                                      3. Người dùng chọn một trong các thao tác:
+                                         - Thêm người dùng mới (extend UC27_1).
+                                         - Sửa thông tin người dùng (extend UC27_2).
+                                         - Vô hiệu hóa người dùng (extend UC27_3).
 
-  **Luồng thay thế / Ngoại lệ**       \[A1\] Email đã tồn tại: Hiển thị lỗi trùng email.
+  **Luồng thay thế / Ngoại lệ**       \[A1\] Email đã tồn tại khi thêm mới:
+                                      Hiển thị thông báo trùng email.
 
-  **Quy tắc kinh doanh**              Email phải duy nhất. Vai trò
-                                      chỉ gồm ADMIN hoặc STAFF.
+  **Quy tắc kinh doanh**              Email phải duy nhất. Vai trò chỉ bao gồm ADMIN hoặc STAFF.
   -----------------------------------------------------------------------
 
 **UC28 -- Sửa Người Dùng**
@@ -1694,7 +1819,7 @@ UC27 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Sửa Người Dùng" as UC28
 usecase "Đăng nhập hệ thống" as UC01
@@ -1733,7 +1858,7 @@ UC28 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Vô hiệu hóa Người Dùng" as UC29
 usecase "Đăng nhập hệ thống" as UC01
@@ -1773,7 +1898,7 @@ UC29 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Quản lý Đơn hàng" as UC30
 usecase "Đăng nhập hệ thống" as UC01
@@ -1820,7 +1945,7 @@ UC30 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Xem Dashboard Thống kê" as UC31
 usecase "Xem Doanh thu Chi tiết" as UC32
@@ -1864,13 +1989,13 @@ UC31 .> UC01 : <<include>>
                                       thời gian thực.
   -----------------------------------------------------------------------
 
-**UC32 -- Xem Doanh thu Chi tiết**
+**UC32 -- Xem Doanh thu **
 
 ```plantuml
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "Xem Doanh thu Chi tiết" as UC32
 usecase "Xem Dashboard Thống kê" as UC31
@@ -1921,7 +2046,7 @@ UC32 .> UC01 : <<include>>
 @startuml
 skinparam defaultFontName "Arial"
 left to right direction
-actor "Quản lý" as QL
+actor "Người quản lý" as QL
 
 usecase "AI Gợi ý Trend" as UC33
 usecase "Đăng nhập hệ thống" as UC01
@@ -2387,15 +2512,6 @@ enum InvoiceStatus {
   REFUNDED
 }
 
-class InstagramTrend {
-  + id : Long
-  + hashtag : String
-  + foodName : String
-  + engagementCount : Integer
-  + scrapedAt : LocalDateTime
-  + calculateInstagramScore() : void
-}
-
 class SerpApiTrend {
   + id : Long
   + keyword : String
@@ -2565,12 +2681,12 @@ Invoice ..> InvoiceStatus
 
 #### 3.4.2. Sơ đồ Tuần tự - Nhóm Quản lý Thực đơn (UC24 - UC26) {#sơ-đồ-tuần-tự-nhóm-quản-lý-thực-đơn .unnumbered}
 
-**Sơ đồ Tuần tự UC24 - Thêm Món ăn**
+**Sơ đồ Tuần tự UC24 - Quản lý Món ăn (Thêm Món ăn)**
 
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "MenuController" as API
         entity "Database" as DB
@@ -2595,7 +2711,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "MenuController" as API
         entity "Database" as DB
@@ -2614,7 +2730,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "MenuController" as API
         entity "Database" as DB
@@ -2637,7 +2753,7 @@ Invoice ..> InvoiceStatus
 
 #### 3.4.3. Sơ đồ Tuần tự - Nhóm Bán hàng & Đơn hàng (UC10 - UC11) {#sơ-đồ-tuần-tự-nhóm-bán-hàng .unnumbered}
 
-**Sơ đồ Tuần tự UC10 - Tạo đơn hàng cho khách**
+**Sơ đồ Tuần tự UC10 - Quản lý đơn hàng (Thêm đơn hàng)**
 
     ```plantuml
     @startuml
@@ -2682,7 +2798,7 @@ Invoice ..> InvoiceStatus
 
 #### 3.4.4. Sơ đồ Tuần tự - Nhóm Thanh toán & Hóa đơn (UC12, UC13, UC16) {#sơ-đồ-tuần-tự-nhóm-thanh-toán .unnumbered}
 
-**Sơ đồ Tuần tự UC12 - Tạo hóa đơn**
+**Sơ đồ Tuần tự UC12 - Quản lý hóa đơn (Tạo hóa đơn)**
 
     ```plantuml
     @startuml
@@ -2754,7 +2870,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "RevenueController" as API
         entity "Database" as DB
@@ -2775,7 +2891,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "RevenueController" as API
         entity "Database" as DB
@@ -2795,7 +2911,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "SuggestionController" as API
         participant "Llama AI API" as Llama
@@ -2826,7 +2942,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý/Nhân viên" as QL
+        actor "Người quản lý/Nhân viên" as QL
         boundary "Frontend" as UI
         control "TableController" as API
         entity "Database" as DB
@@ -2843,7 +2959,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý/Nhân viên" as QL
+        actor "Người quản lý/Nhân viên" as QL
         boundary "Frontend" as UI
         control "TableController" as API
         entity "Database" as DB
@@ -2868,7 +2984,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý/Nhân viên" as QL
+        actor "Người quản lý/Nhân viên" as QL
         boundary "Frontend" as UI
         control "TableController" as API
         entity "Database" as DB
@@ -2887,7 +3003,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý/Nhân viên" as QL
+        actor "Người quản lý/Nhân viên" as QL
         boundary "Frontend" as UI
         control "TableController" as API
         entity "Database" as DB
@@ -2910,12 +3026,12 @@ Invoice ..> InvoiceStatus
 
 #### 3.4.8. Sơ đồ Tuần tự - Nhóm Quản lý Danh mục (UC21 - UC23) {#sơ-đồ-tuần-tự-nhóm-quản-lý-danh-mục .unnumbered}
 
-**Sơ đồ Tuần tự UC21 - Thêm Danh mục**
+**Sơ đồ Tuần tự UC21 - Quản lý Danh mục (Thêm Danh mục)**
 
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "CategoryController" as API
         entity "Database" as DB
@@ -2940,7 +3056,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "CategoryController" as API
         entity "Database" as DB
@@ -2959,7 +3075,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "CategoryController" as API
         entity "Database" as DB
@@ -3023,7 +3139,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "InvoiceController" as API
         entity "Database" as DB
@@ -3047,12 +3163,12 @@ Invoice ..> InvoiceStatus
 
 #### 3.4.11. Sơ đồ Tuần tự - Nhóm Quản lý Voucher (UC18 - UC20) {#sơ-đồ-tuần-tự-nhóm-quản-lý-voucher .unnumbered}
 
-**Sơ đồ Tuần tự UC18 - Thêm Voucher**
+**Sơ đồ Tuần tự UC18 - Quản lý Voucher (Thêm Voucher)**
 
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "VoucherController" as API
         entity "Database" as DB
@@ -3077,7 +3193,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "VoucherController" as API
         entity "Database" as DB
@@ -3096,7 +3212,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "VoucherController" as API
         entity "Database" as DB
@@ -3119,12 +3235,12 @@ Invoice ..> InvoiceStatus
 
 #### 3.4.12. Sơ đồ Tuần tự - Nhóm Quản lý Người dùng (UC27 - UC29) {#sơ-đồ-tuần-tự-nhóm-quản-lý-người-dùng .unnumbered}
 
-**Sơ đồ Tuần tự UC27 - Thêm Người dùng (Staff)**
+**Sơ đồ Tuần tự UC27 - Quản lý Người Dùng (Thêm Người dùng)**
 
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "UserController" as API
         entity "Database" as DB
@@ -3149,7 +3265,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "UserController" as API
         entity "Database" as DB
@@ -3168,7 +3284,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "UserController" as API
         entity "Database" as DB
@@ -3342,7 +3458,7 @@ Invoice ..> InvoiceStatus
     ```plantuml
     @startuml
         hide footbox
-        actor "Quản lý" as QL
+        actor "Người quản lý" as QL
         boundary "Frontend" as UI
         control "RevenueController" as API
         entity "Database" as DB
@@ -4301,18 +4417,246 @@ Lưu thông tin voucher mà khách hàng đã đổi điểm để nhận, ghi n
         EXPIRED --> [*]
     ```
 
+### 3.8. Biểu đồ thành phần và Biểu đồ triển khai {#biểu-đồ-thành-phần-và-biểu-đồ-triển-khai .unnumbered}
+
+#### 3.8.1. Biểu đồ thành phần (Component Diagram) {#biểu-đồ-thành-phần .unnumbered}
+
+Biểu đồ thành phần mô tả cấu trúc các thành phần phần mềm trong hệ thống Quản lý Quán Cafe và mối quan hệ phụ thuộc giữa chúng. Hệ thống được chia thành các thành phần chính như sau:
+
+- **Component_Admin / Component_NhanVien / Component_User**: Đại diện cho các module giao diện người dùng (Frontend) tương ứng với từng vai trò đối tượng sử dụng hệ thống.
+- **Component_HeThong**: Thành phần xử lý logic trung tâm (Backend Application Server), nhận các yêu cầu từ giao diện, xử lý nghiệp vụ và tương tác với các thành phần khác.
+- **Component_Payment**: Thành phần tích hợp cổng thanh toán trực tuyến (MoMo, PayPal, Card).
+- **Component_Database**: Thành phần lưu trữ dữ liệu hệ thống (PostgreSQL/MySQL).
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+skinparam component {
+  BackgroundColor White
+  BorderColor Black
+}
+left to right direction
+
+component "Component_Admin" as Admin
+component "Component_NhanVien" as NhanVien
+component "Component_User" as User
+component "Component_Payment" as Payment
+component "Component_HeThong" as HeThong
+component "Component_Database" as Database
+
+Admin ..|> HeThong
+NhanVien ..|> HeThong
+User ..|> HeThong
+Payment ..|> HeThong
+HeThong ..|> Database
+@enduml
+```
+
+#### 3.8.2. Biểu đồ triển khai (Deployment Diagram) {#biểu-đồ-triển-khai .unnumbered}
+
+Biểu đồ triển khai thể hiện cấu hình vật lý của các node phần cứng và sự phân bổ các thành phần phần mềm trên các node đó trong môi trường vận hành thực tế.
+
+- **Node_Client**: Thiết bị của người dùng (máy tính, điện thoại di động) chạy trình duyệt web để truy cập giao diện.
+- **Node_WebServer**: Máy chủ web tiếp nhận yêu cầu từ client và phân phối các tệp tĩnh (HTML, CSS, JS) qua giao thức bảo mật HTTP/HTTPS.
+- **Node_AppServer**: Máy chủ ứng dụng (Spring Boot Application) thực hiện xử lý logic nghiệp vụ và giao tiếp qua API RESTful.
+- **Node_PaymentGateway**: Cổng thanh toán ngoại vi (MoMo/PayPal/Stripe) xử lý giao dịch tài chính thông qua API kết nối bảo mật.
+- **Node_Database**: Máy chủ cơ sở dữ liệu lưu trữ dữ liệu có cấu trúc của hệ thống, tương tác với AppServer bằng câu lệnh SQL.
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+skinparam node {
+  BackgroundColor White
+  BorderColor Black
+}
+
+node "Node_Client" as Client
+node "Node_WebServer" as WebServer
+node "Node_AppServer" as AppServer
+node "Node_PaymentGateway" as PaymentGateway
+node "Node_Database" as Database
+
+Client -down- WebServer : HTTP/HTTPS
+WebServer -down- AppServer : REST
+AppServer -down- PaymentGateway : API
+AppServer -down- Database : SQL
+@enduml
+```
+
+### 3.9. Thiết kế Giải thuật {#thiết-kế-giải-thuật .unnumbered}
+
+Để cụ thể hóa logic xử lý nghiệp vụ phức tạp của hệ thống, phần này mô tả thiết kế giải thuật cho các chức năng cốt lõi dưới dạng biểu đồ luồng hoạt động (Activity Diagram) không phân chia thành phần xử lý (swimlanes):
+
+#### 3.9.1. Giải thuật Đăng ký tài khoản
+
+Giải thuật này xử lý luồng đăng ký tài khoản người dùng mới, bao gồm kiểm tra định dạng email đầu vào, đối chiếu sự tồn tại của tài khoản trong cơ sở dữ liệu, mã hóa mật khẩu bảo mật và lưu thông tin người dùng với vai trò mặc định.
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+skinparam conditionStyle InsideDiamond
+start
+:Nhận thông tin: Email, Mật khẩu, Tên hiển thị và Số điện thoại;
+:Kiểm tra định dạng Email hợp lệ;
+if (Email đã tồn tại trong Database?) then (Có)
+  :Thông báo lỗi "Email đã tồn tại";
+  stop
+else (Không)
+  :Mã hóa mật khẩu bằng thuật toán BCrypt;
+  :Gán vai trò mặc định (CUSTOMER);
+  :Lưu thông tin Người dùng mới vào Database;
+  :Thông báo "Đăng ký thành công";
+  stop
+endif
+@enduml
+```
+
+#### 3.9.2. Giải thuật Đăng nhập tài khoản
+
+Giải thuật này xử lý luồng xác thực đăng nhập người dùng bằng tài khoản nội bộ (Local Account), đối chiếu mật khẩu mã hóa trong cơ sở dữ liệu và phát hành mã thông báo JWT Token khi thành công.
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+skinparam conditionStyle InsideDiamond
+start
+:Nhập Email và Mật khẩu;
+:Truy vấn Người dùng theo Email từ Database;
+if (Tìm thấy Người dùng & tài khoản đang hoạt động?) then (Có)
+  :So khớp mật khẩu nhập vào với mật khẩu mã hóa (BCrypt);
+  if (Mật khẩu trùng khớp?) then (Có)
+    :Khởi tạo JWT Token chứa ID, Email và Danh sách vai trò;
+    :Trả về JWT Token và thông tin Người dùng;
+    stop
+  else (Không)
+    :Thông báo lỗi "Mật khẩu không chính xác";
+    stop
+  endif
+else (Không)
+  :Thông báo lỗi "Tài khoản không tồn tại hoặc đã bị khóa";
+  stop
+endif
+@enduml
+```
+
+#### 3.9.3. Giải thuật Tạo Đơn hàng (POS)
+
+Giải thuật này điều phối việc khởi tạo một đơn hàng mới từ giao diện bán hàng (POS). Nó kiểm tra và cập nhật trạng thái bàn phục vụ đối với loại đơn dùng tại bàn (Dine-in) để giữ chỗ, sau đó lưu thông tin đơn hàng mới vào cơ sở dữ liệu (các món ăn sẽ được thêm vào đơn sau đó qua API riêng biệt).
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+skinparam conditionStyle InsideDiamond
+start
+:Nhận dữ liệu: tableId (nếu dùng tại bàn, null nếu mang đi);
+if (Loại đơn hàng?) then (Dùng tại bàn (Dine-in))
+  :Truy vấn thông tin Bàn từ Database theo tableId;
+  if (Bàn tồn tại và đang trống (available = true)?) then (Có)
+    :Cập nhật trạng thái Bàn thành đang phục vụ (available = false);
+    :Lưu trạng thái Bàn mới vào Database;
+  else (Không)
+    :Trả về lỗi "Bàn không tồn tại hoặc đã có khách ngồi";
+    stop
+  endif
+else (Mang đi (Takeaway))
+  :Thiết lập tableId = null;
+endif
+:Khởi tạo đối tượng Đơn hàng (Order) mới;
+:Thiết lập các thuộc tính: status = "PENDING", orderTime = thời gian hiện tại, table = tableId;
+:Lưu đối tượng Order vào Database và sinh ID đơn hàng;
+:Trả về thông tin Đơn hàng đã tạo cho Frontend;
+stop
+@enduml
+```
+
+#### 3.9.4. Giải thuật Tạo Hóa đơn và Thanh toán
+
+Giải thuật này kiểm tra đơn hàng cần thanh toán, tính toán tiền gốc dựa trên các dòng món ăn, kiểm tra và áp dụng voucher giảm giá (nếu có), tính tổng tiền thanh toán thực tế, tạo bản ghi hóa đơn và tiến hành xử lý thanh toán trực tiếp bằng tiền mặt hoặc khởi tạo phiên thanh toán trực tuyến qua cổng Momo/PayPal.
+
+```plantuml
+@startuml
+skinparam defaultFontName "Arial"
+skinparam conditionStyle InsideDiamond
+start
+:Nhận dữ liệu: orderId, userId (nhân viên thanh toán), voucherCode (nếu có), paymentMethod;
+:Truy vấn thông tin Đơn hàng (Order) từ Database;
+if (Không tìm thấy Đơn hàng hoặc trạng thái Đơn hàng khác PENDING?) then (Có)
+  :Trả về lỗi "Đơn hàng không khả dụng để thanh toán";
+  stop
+else (Không)
+  :Truy vấn tất cả các món ăn trong đơn hàng (OrderItems);
+  :Tính tổng tiền gốc (originalAmount) = tổng (đơn giá * số lượng);
+  :Khởi tạo số tiền giảm giá discountAmount = 0;
+  if (Có nhập mã voucherCode?) then (Có)
+    :Gọi giải thuật kiểm tra và áp dụng mã Voucher;
+    if (Voucher hợp lệ?) then (Có)
+      :discountAmount = số tiền giảm giá được tính;
+      :Cập nhật trạng thái UserVoucher thành đã dùng (used = true);
+    else (Không hợp lệ)
+      :Ghi nhận cảnh báo và bỏ qua giảm giá;
+    endif
+  endif
+  :Tính tổng tiền thanh toán: totalAmount = originalAmount - discountAmount;
+  :Khởi tạo đối tượng Hóa đơn (Invoice) với trạng thái "PENDING";
+  :Lưu Invoice vào Database để lấy ID hóa đơn;
+  if (Phương thức thanh toán (paymentMethod)?) then (CASH - Tiền mặt)
+    :Cập nhật Invoice: status = "PAID", paymentTime = thời gian hiện tại;
+    :Cập nhật Order: status = "PAID";
+    if (Đơn hàng dùng tại bàn?) then (Có)
+      :Giải phóng Bàn (restaurant_table.available = true);
+    endif
+    :Lưu các thay đổi của Invoice, Order, Bàn vào Database;
+    :Trả về hóa đơn đã thanh toán để nhân viên in biên lai;
+    stop
+  else (MOMO / PAYPAL - Thanh toán trực tuyến)
+    :Gửi yêu cầu tạo giao dịch tới API của cổng thanh toán tương ứng;
+    :Nhận URL thanh toán hoặc mã QR động từ Gateway;
+    :Trả về thông tin cổng thanh toán và link liên kết cho Frontend;
+    stop
+  endif
+endif
+@enduml
+```
+
 ## CHƯƠNG 4: HIỆN THỰC HÓA VÀ KẾT QUẢ {#chương-4-hiện-thực-hóa-và-kết-quả .unnumbered}
 
-*(Trong file Word thực tế, bạn sẽ cần chèn các ảnh chụp màn hình tương
-ứng với các mục dưới đây)* - **4.1. Giao diện Đăng nhập và Dashboard
-Thống kê:** Hình ảnh trang chủ quản lý hiển thị các biểu đồ doanh thu
-Bar, Pie Chart. - **4.2. Giao diện Quản lý Bàn và Bán hàng (POS):** Hình
-ảnh luồng nhân viên chọn bàn, thêm món ăn vào hóa đơn. - **4.3. Giao
-diện Tìm kiếm Món ăn Hot Trend:** Hình ảnh hiển thị bảng phân tích của
-AI Llama đề xuất món uống đang thịnh hành. - **4.4. Quản lý hệ thống:**
-Giao diện thêm xóa sửa danh mục, món ăn, mã Voucher, quản lý nhân viên.
+### 4.1. Chuẩn bị cài đặt và Cấu hình hệ thống {#chuẩn-bị-cài-đặt-và-cấu-hình-hệ-thống .unnumbered}
 
-### 4.5. Tài liệu kiểm thử hệ thống
+Để triển khai hệ thống, cần chuẩn bị môi trường và thực hiện các bước cài đặt cơ bản như sau:
+
+#### 4.1.1. Yêu cầu môi trường hệ thống
+
+*   **Hệ điều hành:** Windows, macOS hoặc Linux.
+*   **Môi trường chạy:** JDK 17, Node.js (v18 trở lên), PostgreSQL (v15/16), Redis (v6/7).
+*   **Công cụ:** IntelliJ IDEA / VS Code, công cụ Ngrok (để nhận Webhook thanh toán).
+
+#### 4.1.2. Các bước cài đặt và khởi chạy
+
+1.  **Thiết lập Cơ sở dữ liệu và Cache:**
+    *   Tạo database mới tên là `cafe_managerment` trong PostgreSQL.
+    *   Khởi chạy dịch vụ Redis trên cổng mặc định 6379.
+2.  **Khởi chạy Backend (Spring Boot):**
+    *   Mở thư mục `Backend-Spring` bằng IDE.
+    *   Cấu hình cổng chạy, thông tin kết nối Database, Redis, cổng thanh toán (Momo, Paypal) và API Keys (Cloudinary, Llama AI) tại file `application.properties`.
+    *   Build và chạy ứng dụng Spring Boot (lắng nghe tại cổng `http://localhost:8080`).
+3.  **Khởi chạy Frontend (Next.js):**
+    *   Di chuyển vào thư mục `Frontend-Nextjs`.
+    *   Tạo file `.env.local` ở thư mục gốc và cấu hình API URL: `NEXT_PUBLIC_API_URL=http://localhost:8080`.
+    *   Chạy lệnh `npm install` để cài đặt thư viện và `npm run dev` để chạy giao diện (truy cập tại `http://localhost:3000`).
+4.  **Cấu hình Webhook thanh toán (Tùy chọn):**
+    *   Khởi chạy ngrok: `ngrok http 8080` để lấy URL HTTPS công khai.
+    *   Cập nhật URL này vào các cấu hình Callback của Momo/Paypal trong file `application.properties`.
+
+### 4.2. Hiện thực hóa giao diện hệ thống {#hiện-thực-hóa-giao-diện-hệ-thống .unnumbered}
+
+*(Trong file Word thực tế, bạn sẽ cần chèn các ảnh chụp màn hình tương ứng với các mục dưới đây)*
+
+*   **4.2.1. Giao diện Đăng nhập và Dashboard Thống kê:** Hình ảnh trang chủ quản lý hiển thị các biểu đồ doanh thu Bar, Pie Chart.
+*   **4.2.2. Giao diện Quản lý Bàn và Bán hàng (POS):** Hình ảnh luồng nhân viên chọn bàn, thêm món ăn vào hóa đơn.
+*   **4.2.3. Giao diện Tìm kiếm Món ăn Hot Trend:** Hình ảnh hiển thị bảng phân tích của AI Llama đề xuất món uống đang thịnh hành.
+*   **4.2.4. Quản lý hệ thống:** Giao diện thêm xóa sửa danh mục, món ăn, mã Voucher, quản lý nhân viên.
+
+### 4.3. Tài liệu kiểm thử hệ thống
 
 Để đảm bảo hệ thống hoạt động ổn định và đáp ứng đúng các yêu cầu nghiệp vụ, quá trình kiểm thử được thực hiện qua các kịch bản kiểm thử chi tiết dưới đây:
 

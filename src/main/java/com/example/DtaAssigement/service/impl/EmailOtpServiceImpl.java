@@ -31,6 +31,7 @@ public class EmailOtpServiceImpl implements EmailOtpService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         // Xóa OTP cũ
         otpRepo.deleteByUser(user);
+        otpRepo.flush();
 
         // Tạo OTP ngẫu nhiên 6 chữ số
         String otp = String.format("%06d", new Random().nextInt(1_000_000));

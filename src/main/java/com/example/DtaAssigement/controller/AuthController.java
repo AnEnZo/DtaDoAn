@@ -140,8 +140,12 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không hợp lệ hoặc đã hết hạn.");
         }
 
-        userService.updatePassword(user, newPassword);
-        return ResponseEntity.ok("Đặt lại mật khẩu thành công!");
+        try {
+            userService.updatePassword(user, newPassword);
+            return ResponseEntity.ok("Đặt lại mật khẩu thành công!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
 }
