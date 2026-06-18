@@ -7,10 +7,6 @@ import com.example.DtaAssigement.repository.*;
 import com.example.DtaAssigement.service.MenuItemService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,19 +25,16 @@ public class MenuItemServiceImpl implements MenuItemService {
     private final CategoryRepository categoryRepo;
 
     @Override
-    @Cacheable(value = "menuItems", key = "'all'")
     public List<MenuItem> getAllMenuItems() {
         return menuItemRepo.findAll();
     }
 
     @Override
-    @Cacheable(value = "menuItem", key = "#id")
     public Optional<MenuItem> getMenuItemById(Long id) {
         return menuItemRepo.findById(id);
     }
 
     @Override
-    @Cacheable(value = "menuItemsByCategory", key = "#categoryName")
     public List<MenuItem> getMenuItemsByCategory(String categoryName) {
         // Có thể kiểm tra tồn tại Category nếu muốn:
         if (!categoryRepo.existsByName(categoryName)) {
@@ -53,7 +46,6 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    @Cacheable(value = "menuItemsByCategoryId", key = "#categoryId")
     public List<MenuItem> getMenuItemsByCategoryId(Long categoryId) {
         if (!categoryRepo.existsById(categoryId)) {
             throw new ResponseStatusException(
@@ -64,8 +56,6 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    @CachePut(value = "menuItem", key = "#result.id") // Cập nhật cache cho món ăn mới
-    @CacheEvict(value = "menuItems", allEntries = true) // Xóa cache danh sách món ăn
     public MenuItemDTO createMenuItem(MenuItemDTO menuItemDTO) {
         // Kiểm tra và lấy tên danh mục
         String categoryName = menuItemDTO.getCategory().getName();
@@ -86,8 +76,6 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    @CachePut(value = "menuItem", key = "#id")
-    @CacheEvict(value = "menuItems", allEntries = true)
     public MenuItemDTO updateMenuItem(Long id, MenuItemDTO menuItemDTO) {
         MenuItem existing = menuItemRepo.findById(id)
                 .orElseThrow(
@@ -109,10 +97,6 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "menuItem", key = "#id"),
-            @CacheEvict(value = "menuItems", allEntries = true)
-    })
     public void deleteMenuItem(Long id) {
         menuItemRepo.deleteById(id);
     }

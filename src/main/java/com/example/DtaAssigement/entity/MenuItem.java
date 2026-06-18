@@ -38,8 +38,7 @@ public class MenuItem {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    @NotNull(message = "Danh mục món ăn không được để trống")
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)

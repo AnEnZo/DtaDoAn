@@ -2,8 +2,11 @@ package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.dto.CategoryDTO;
 import com.example.DtaAssigement.entity.Category;
+import com.example.DtaAssigement.entity.MenuItem;
 import com.example.DtaAssigement.repository.CategoryRepository;
+import com.example.DtaAssigement.repository.MenuItemRepository;
 import com.example.DtaAssigement.service.CategoryService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository repository;
+    private final MenuItemRepository menuItemRepository;
 
     @Override
     @Cacheable(value = "categories", key = "'all'")
@@ -64,11 +68,18 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     @Caching(evict = {
             @CacheEvict(value = "categories", allEntries = true),
             @CacheEvict(value = "category", key = "#id")
     })
     public void deleteCategory(Long id) {
+        // Gỡ tham chiếu: các món ăn thuộc danh mục này sẽ được set category = null
+        // thay vì bị xóa theo (không cascade delete).
+        List<MenuItem> items = menuItemRepository.findByCategoryId(id);
+        items.forEach(item -> item.setCategory(null));
+        menuItemRepository.saveAll(items);
+
         repository.deleteById(id);
     }
 
