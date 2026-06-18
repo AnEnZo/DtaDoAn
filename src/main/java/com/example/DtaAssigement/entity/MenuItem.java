@@ -41,6 +41,14 @@ public class MenuItem {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    // Soft-delete flag: deleted menu items are hidden from listings but kept so
+    // older orders/invoices still display their items (history + FK integrity).
+    // columnDefinition adds a DB default so adding this NOT NULL column to existing rows succeeds.
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    @Schema(hidden = true)
+    private boolean deleted = false;
+
     @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     private List<OrderItem> orderItems;

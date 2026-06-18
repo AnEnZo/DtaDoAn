@@ -1,6 +1,7 @@
 package com.example.DtaAssigement.service.impl;
 
 import com.example.DtaAssigement.dto.MenuItemDTO;
+import com.example.DtaAssigement.ennum.OrderStatus;
 import com.example.DtaAssigement.entity.*;
 import com.example.DtaAssigement.mapper.MenuItemMapper;
 import com.example.DtaAssigement.repository.*;
@@ -23,15 +24,17 @@ public class MenuItemServiceImpl implements MenuItemService {
     private final MenuItemRepository menuItemRepo;
     private final CategoryRepository categoryrepository;
     private final CategoryRepository categoryRepo;
+    private final OrderItemRepository orderItemRepo;
 
     @Override
     public List<MenuItem> getAllMenuItems() {
-        return menuItemRepo.findAll();
+        // Chỉ trả về món chưa bị xóa mềm (món đã xóa vẫn còn trong DB để giữ lịch sử đơn hàng).
+        return menuItemRepo.findByDeletedFalse();
     }
 
     @Override
     public Optional<MenuItem> getMenuItemById(Long id) {
-        return menuItemRepo.findById(id);
+        return menuItemRepo.findByIdAndDeletedFalse(id);
     }
 
     @Override
@@ -42,7 +45,7 @@ public class MenuItemServiceImpl implements MenuItemService {
                     HttpStatus.NOT_FOUND,
                     "Category '" + categoryName + "' not found");
         }
-        return menuItemRepo.findByCategoryName(categoryName);
+        return menuItemRepo.findByCategoryNameAndDeletedFalse(categoryName);
     }
 
     @Override
@@ -52,7 +55,7 @@ public class MenuItemServiceImpl implements MenuItemService {
                     HttpStatus.NOT_FOUND,
                     "Category with ID " + categoryId + " not found");
         }
-        return menuItemRepo.findByCategoryId(categoryId);
+        return menuItemRepo.findByCategoryIdAndDeletedFalse(categoryId);
     }
 
     @Override
@@ -98,7 +101,22 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public void deleteMenuItem(Long id) {
-        menuItemRepo.deleteById(id);
+        MenuItem item = menuItemRepo.findById(id)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MenuItem not found with id " + id));
+
+        // Nếu món đang nằm trong đơn hàng chưa hoàn tất (chờ phục vụ / đã phục vụ)
+        // thì không cho xóa, để tránh phá vỡ đơn đang xử lý.
+        boolean inActiveOrder = orderItemRepo.existsByMenuItemIdAndOrderStatusIn(
+                id, List.of(OrderStatus.PENDING, OrderStatus.SERVED));
+        if (inActiveOrder) {
+            throw new IllegalStateException(
+                    "Không thể xóa món vì món đang nằm trong đơn hàng chưa thanh toán (đang chờ phục vụ hoặc đã phục vụ).");
+        }
+
+        // Xóa mềm: giữ lại bản ghi để các đơn hàng/hóa đơn cũ vẫn hiển thị được món này.
+        item.setDeleted(true);
+        menuItemRepo.save(item);
     }
 
 }

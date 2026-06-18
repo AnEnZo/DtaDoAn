@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 public class CategoryMapper {
 
     public static CategoryDTO toDTO(Category entity) {
+        // Món ăn có thể không còn danh mục (danh mục đã bị xóa -> category = null).
+        if (entity == null) {
+            return null;
+        }
         return CategoryDTO.builder()
                 .id(entity.getId())
                 .name(entity.getName())

@@ -12,6 +12,7 @@ import com.example.DtaAssigement.ennum.OrderStatus;
 
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,5 +37,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
     Optional<OrderItem> findByOrderIdAndMenuItemId(Long orderId, Long menuItemId);
 
+    // Kiểm tra món có đang nằm trong đơn hàng ở các trạng thái cho trước hay không
+    // (dùng để chặn xóa món khi còn đơn PENDING/SERVED).
+    boolean existsByMenuItemIdAndOrderStatusIn(Long menuItemId, Collection<OrderStatus> statuses);
 
 }

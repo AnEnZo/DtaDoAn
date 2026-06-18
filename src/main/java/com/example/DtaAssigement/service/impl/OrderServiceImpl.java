@@ -86,6 +86,9 @@ public class OrderServiceImpl implements OrderService {
         MenuItem item = menuItemRepo.findById(menuItemId)
                 .orElseThrow(() -> new NoSuchElementException("MenuItem not found: " + menuItemId));
 
+        if (item.isDeleted()) {
+            throw new IllegalStateException("Món ăn này đã ngừng kinh doanh và không thể thêm vào đơn hàng.");
+        }
         if (item.getCategory() == null) {
             throw new IllegalStateException("Thiếu thông tin chi nhánh hoặc danh mục món ăn.");
         }

@@ -395,13 +395,26 @@ public class InvoiceServiceImpl implements InvoiceService {
             return false;
         }
         Invoice invoice = invoiceRepo.findById(id).get();
+        // Giữ tham chiếu đơn hàng trước khi xóa hóa đơn để xóa luôn sau đó.
+        Order order = invoice.getOrder();
+
+        // Xóa hóa đơn trước (gỡ khóa ngoại order_id) rồi flush, để việc xóa đơn
+        // hàng phía sau không vi phạm ràng buộc khóa ngoại.
         invoiceRepo.deleteById(id);
+        invoiceRepo.flush();
+
         if (invoice.getStatus() == InvoiceStatus.PAID) {
             revenueService.recordRevenue(
                     invoice.getPaymentTime().toLocalDate(),
                     invoice.getPaymentMethod(),
                     invoice.getTotalAmount().negate());
         }
+
+        // Xóa luôn đơn hàng mà hóa đơn tham chiếu (OrderItem được cascade xóa theo).
+        if (order != null) {
+            orderRepo.delete(order);
+        }
+
         return true;
     }
 
