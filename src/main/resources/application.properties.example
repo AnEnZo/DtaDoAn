@@ -1,0 +1,273 @@
+# Spring Boot Application Properties
+spring.application.name=DTAdemoTuan6
+
+# Frontend SPA base URL used for MoMo/PayPal/OAuth redirects (override via FRONTEND_BASE_URL)
+app.frontend-base-url=${FRONTEND_BASE_URL:http://localhost:3000}
+# When true, 500 responses include exception class + stack trace. Keep false in production.
+app.expose-error-details=${EXPOSE_ERROR_DETAILS:true}
+
+#server.forward-headers-strategy=framework
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/cafe_managerment
+spring.datasource.username=postgres
+spring.datasource.password=your_db_password
+server.port=8080
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+logging.level.org.springdoc=DEBUG
+logging.level.org.springframework.web=DEBUG
+logging.level.org.hibernate=DEBUG
+logging.level.root=DEBUG
+logging.level.org.springframework.security=DEBUG
+springdoc.swagger-ui.path=/swagger-ui.html
+server.error.include-message=always
+server.error.include-binding-errors=always
+server.error.include-stacktrace=always
+
+# JWT Configuration
+# secret key to sign JWT tokens
+jwt.secret=your_jwt_secret_key_at_least_64_characters_long
+# token expiration time in milliseconds (1 day)
+jwt.expiration=86400000
+
+# mail Configuration
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your_email@gmail.com
+spring.mail.password=your_email_app_password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+
+twilio.account-sid=your_twilio_account_sid
+twilio.auth-token=your_twilio_auth_token
+twilio.from-phone=your_twilio_phone_number
+logging.level.com.twilio=DEBUG
+
+vonage.api-key=your_vonage_api_key
+vonage.api-secret=your_vonage_api_secret
+
+# Redis Cache Configuration
+spring.cache.type=redis
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.password=
+spring.cache.redis.time-to-live=600000
+spring.cache.redis.cache-null-values=false
+
+# Allow app to start even if Redis is not available
+# App will log warnings but continue running without caching
+spring.data.redis.lettuce.pool.max-active=8
+spring.data.redis.lettuce.pool.max-idle=8
+spring.data.redis.lettuce.pool.min-idle=0
+spring.data.redis.timeout=2000ms
+# spring.autoconfigure.exclude=
+
+# ============= Rqueue Advanced Configuration =============
+# Enable Rqueue1
+rqueue.enabled=true
+
+# Web Dashboard
+rqueue.web.enable=true
+rqueue.web.url.prefix=/rqueue
+
+# Global Settings
+rqueue.retry.per.poll=3
+rqueue.scheduler.auto.start=true
+rqueue.metrics.count.execution=true
+rqueue.metrics.count.failure=true
+rqueue.dead.letter.consumer.enabled=true
+
+# ===== Email Queue Configuration =====
+# High concurrency - emails are independent
+rqueue.queue.email-queue.concurrency=10
+rqueue.queue.email-queue.retry-count=3
+rqueue.queue.email-queue.visibility-timeout=60000
+
+# ===== SMS Queue Configuration =====
+# Lower concurrency - SMS provider has rate limits
+rqueue.queue.sms-queue.concurrency=3
+rqueue.queue.sms-queue.retry-count=5
+rqueue.queue.sms-queue.visibility-timeout=30000
+
+# ===== Trending Food Update Queue Configuration =====
+# Single worker - heavy API calls
+rqueue.queue.trending-food-update-queue.concurrency=1
+rqueue.queue.trending-food-update-queue.retry-count=2
+rqueue.queue.trending-food-update-queue.visibility-timeout=300000
+
+# ===== Food Trend Batch Queue Configuration =====
+# Multiple workers - process batches of trends with Llama AI
+rqueue.queue.food-trend-batch-queue.concurrency=3
+rqueue.queue.food-trend-batch-queue.retry-count=2
+rqueue.queue.food-trend-batch-queue.visibility-timeout=120000
+
+logging.level.org.springframework.messaging.simp=DEBUG
+logging.level.org.springframework.web.socket=DEBUG
+
+# Silence noisy queue and infrastructure logs
+logging.level.com.github.sonus21.rqueue=WARN
+logging.level.io.lettuce=WARN
+rqueue.polling.interval=3000 
+logging.level.org.springframework.data.redis=WARN
+logging.level.jakarta.mail=WARN
+logging.level.javax.mail=WARN
+logging.level.com.sun.mail=WARN
+logging.level.sun.rmi=WARN
+logging.level.javax.management.remote=WARN
+
+spring.security.messaging.csrf.enabled=false
+
+# OAuth2 Client registration
+spring.security.oauth2.client.registration.google.client-id=your_google_client_id
+spring.security.oauth2.client.registration.google.client-secret=your_google_client_secret
+spring.security.oauth2.client.registration.google.scope=email,profile
+
+# Use Spring default login processing path style for compatibility with gateway/microservices
+spring.security.oauth2.client.registration.google.redirect-uri={baseUrl}/login/oauth2/code/{registrationId}
+#spring.security.oauth2.client.registration.google.redirect-uri=http://localhost:8080/oauth2/code/google
+# OAuth2 Provider (Google)
+spring.security.oauth2.client.provider.google.authorization-uri=https://accounts.google.com/o/oauth2/v2/auth
+spring.security.oauth2.client.provider.google.token-uri=https://oauth2.googleapis.com/token
+spring.security.oauth2.client.provider.google.user-info-uri=https://www.googleapis.com/oauth2/v3/userinfo
+spring.security.oauth2.client.provider.google.user-name-attribute=sub
+#spring.security.oauth2.client.registration.google.scope=openid,profile,email,https://www.googleapis.com/auth/user.phonenumbers.read
+
+
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# Format log
+# logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
+# logging.pattern.file=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+
+##Configuration for development environment
+#DEV_MOMO_ENDPOINT=https://test-payment.momo.vn/v2/gateway/api
+#DEV_ACCESS_KEY=your_dev_momo_access_key
+#DEV_PARTNER_CODE=your_dev_momo_partner_code
+#DEV_SECRET_KEY=your_dev_momo_secret_key
+
+
+
+
+# MoMo Vietnam Gateway API (không cần subscription-key cho gateway API)
+momo.base-url=https://test-payment.momo.vn
+momo.target-environment=sandbox
+momo.webhook-secret=your_momo_webhook_secret
+momo.ipn-url=your_ngrok_or_public_domain/api/invoices/webhook/momo
+momo.redirect-url=your_ngrok_or_public_domain/api/invoices/return/momo
+momo.currency=VND
+momo.partner-code=your_momo_partner_code
+momo.access-key=your_momo_access_key
+momo.secret-key=your_momo_secret_key
+momo.partner-name=${MOMO_PARTNER_NAME:Tiem Banh 247}
+momo.request-type=${MOMO_REQUEST_TYPE:captureWallet}
+momo.store-id=your_momo_store_id
+
+#momo.access-key=your_momo_access_key
+#momo.partner-code=your_momo_partner_code
+#momo.secret-key=your_momo_secret_key
+
+
+##Configuration for production environment
+#PROD_MOMO_ENDPOINT=https://payment.momo.vn/v2/gateway/api
+#PROD_ACCESS_KEY=key
+#PROD_PARTNER_CODE=key
+#PROD_SECRET_KEY=key
+## AIOv2
+CREATE_URL=/create
+QUERY_URL=/query
+REFUND_URL=/refund
+CONFIRM_URL=/confirm
+TOKEN_PAY_URL=/tokenization/pay
+TOKEN_BIND_URL=/tokenization/bind
+TOKEN_INQUIRY_URL=/tokenization/cbQuery
+TOKEN_DELETE_URL=/tokenization/delete
+
+
+
+# ============= PayPal Configuration =============
+paypal.mode=sandbox
+
+# Client Credentials
+paypal.client-id=your_paypal_client_id
+paypal.client-secret=your_paypal_client_secret
+
+# API Configuration
+paypal.api-base-url=https://api-m.sandbox.paypal.com
+paypal.api-version=v2
+paypal.currency=USD
+
+# Webhook (for payment confirmation)
+paypal.webhook-id=your_paypal_webhook_id
+# webhook endpoint: your_ngrok_or_public_domain/api/invoices/paypal/webhook
+
+# Return URLs
+paypal.return-success-url=${PAYPAL_SUCCESS_URL:your_ngrok_or_public_domain/api/invoices/paypal/success}
+paypal.return-cancel-url=${PAYPAL_CANCEL_URL:your_ngrok_or_public_domain/api/invoices/paypal/cancel}
+
+# Connection Settings
+paypal.connection-timeout=30000
+paypal.read-timeout=30000
+
+# Logging
+paypal.logging-enabled=true
+
+# Exchange rate for VND to USD conversion
+paypal.exchange-rate-vnd-to-usd=25000
+
+# SearchAPI.io
+searchapi.api-key=your_searchapi_key
+searchapi.base-url=https://www.searchapi.io/api/v1/search
+# Trending Settings
+trending.geo=VN
+trending.time-window=past_24_hours
+trending.category=food_and_drink
+trending.update-interval-hours=6
+
+
+# Scrapeless
+scrapeless.api-key=your_scrapeless_api_key
+scrapeless.base-url=https://api.scrapeless.com/api/v1/scraper/request
+
+# SerpAPI
+serpapi.api-key=your_serpapi_key
+serpapi.base-url=https://serpapi.com/search.json
+
+# Facebook
+facebook.app-id=your_facebook_app_id
+facebook.app-secret=your_facebook_app_secret
+facebook.access-token=your_facebook_access_token
+
+youtube.api-key=your_youtube_api_key
+
+
+# Instagram Basic Display hoặc Graph API
+# instagram.app-id=your_instagram_app_id
+instagram.app-id=your_instagram_app_id
+instagram.app-secret=your_instagram_app_secret
+# instagram.access-token=your_instagram_access_token
+instagram.business-account-id=your_instagram_business_account_id
+#instagram.business-account-id=your_instagram_business_account_id
+instagram.access-token=your_instagram_access_token
+
+# Llama AI API Configuration
+#llama.api.base-url=https://merna-archeological-snufflingly.ngrok-free.dev
+llama.api.base-url=https://anenzo-llama-3-2-3b.hf.space
+
+# Llama API Timeout Settings (in seconds)
+# Connect timeout: time to establish connection
+llama.api.connect-timeout=60
+# Read timeout: time to wait for AI response (longer for AI processing + HF Space cold start)
+llama.api.read-timeout=300
+
+groq.api.key=your_groq_api_key
+groq.api.model=llama-3.3-70b-versatile
+
+cloudinary.cloud-name=your_cloudinary_cloud_name
+cloudinary.api-key=your_cloudinary_api_key
+cloudinary.api-secret=your_cloudinary_api_secret
